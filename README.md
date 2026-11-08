@@ -44,8 +44,8 @@
 
 * **安装** [node.js](https://nodejs.org/zh-cn/) **环境**
 
-  > node > 16.16.0  
-  > npm > 8.15.0
+  > node >= 20.19（推荐 22 LTS）  
+  > pnpm >= 10
   
 * 然后以 **管理员权限** 运行 `cmd` 终端，并 `cd` 到 项目根目录
 * 在 `终端` 中输入：
@@ -63,7 +63,7 @@ pnpm dev
 # 构建
 pnpm build
 ```
-> 构建完成后，静态资源会在 **`dist` 目录** 中生成，可将 **`dist` 文件夹下的文件**上传至服务器，也可使用 `Vercel` 等托管平台一键导入并自动部署
+> 构建完成后，预渲染的静态资源会在 **`.output/public` 目录** 中生成，可将该目录下的文件上传至服务器，也可使用 `Vercel` / `Netlify` / `Cloudflare Pages` 等托管平台导入并自动部署（输出目录填写 `.output/public`，构建命令 `pnpm build`）
 
 ### Docker 部署
 
@@ -78,7 +78,7 @@ docker run -p 12445:12445 -d home
 
 ### 网站链接
 
-在 `src/assets/siteLinks.json` 中可以自定义网站链接（以指向自己的网站）:
+在 `app/assets/data/siteLinks.json` 中可以自定义网站链接（以指向自己的网站）:
 
 ```json
 {
@@ -88,7 +88,7 @@ docker run -p 12445:12445 -d home
 },
 ```
 
-其中 `icon` 网站链接的图标可以在 `src/components/Links/index.vue` 中添加:
+其中 `icon` 网站链接的图标可以在 `app/components/Links.vue` 中添加:
 
 ```js
 // 可前往 https://www.xicons.org 自行挑选并在此处引入
@@ -120,7 +120,7 @@ const siteIcon = {
 
 ### 社交链接
 
-在 `src/assets/socialLinks.json` 中可以自定义社交链接。
+在 `app/assets/data/socialLinks.json` 中可以自定义社交链接。
 
 ### 天气
 
@@ -198,16 +198,11 @@ make clean all
 
 可以在 `public/images` 中修改网站背景
 
-如果想要添加更多的本地图片作为网站背景，可以将图片重命名 `background+数字` 的形式，并在 `src/components/Background/index.vue` 中进行修改：
+如果想要添加更多的本地图片作为网站背景，可以将图片转为 webp 并重命名为 `background+数字.webp` 的形式，然后在 `app/components/Background.vue` 中修改图片数量：
 
 ```js
-
-if (type == 0) {
-  // 修改此处 Math.random() 后面的第一个数字为图片的数量
-  bgUrl.value = `/images/background${Math.floor(
-    Math.random() * 10 + 1
-  )}.webp`;
-}
+// 默认壁纸数量（public/images/background{1..N}.webp）
+const BG_COUNT = 12;
 ```
 
 #### 网站图标
@@ -217,7 +212,7 @@ if (type == 0) {
 ### 技术栈
 
 * [Vue](https://cn.vuejs.org/)
-* [Vite](https://vitejs.cn/vite3-cn/)
+* [Nuxt](https://nuxt.com/)
 * [Pinia](https://pinia.vuejs.org/zh/)
 * [IconPark](https://iconpark.oceanengine.com/official)
 * [xicons](https://xicons.org/)

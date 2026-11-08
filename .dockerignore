@@ -5,11 +5,9 @@ docker-compose*
 .dockerignore
 .git
 .github
-.gitignore
 README.md
 LICENSE
 .vscode
+.nuxt
+.output
 dist
-build
-images
-script

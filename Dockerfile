@@ -1,16 +1,15 @@
-# 构建应用
-FROM node:18 AS builder
+# 构建静态站点
+FROM node:22-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+RUN corepack enable
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build
+RUN pnpm build
 
-# 最小化镜像
-FROM node:18-alpine
-WORKDIR /app
-COPY --from=builder /app/dist ./dist
-RUN npm install -g http-server
-
+# 使用 nginx 托管静态文件
+FROM nginx:alpine
+COPY --from=builder /app/.output/public /usr/share/nginx/html
+RUN sed -i 's/listen\s*80;/listen 12445;/; s/listen\s*\[::\]:80;/listen [::]:12445;/' /etc/nginx/conf.d/default.conf \
+  && sed -i 's/#gzip  on;/gzip on;\n    gzip_types text\/css application\/javascript application\/json image\/svg+xml application\/manifest+json;/' /etc/nginx/nginx.conf
 EXPOSE 12445
-CMD ["http-server", "dist", "-p", "12445"]
