@@ -161,18 +161,18 @@ p {
 
 @keyframes fade-blur-in {
   from {
-    filter: blur(20px) brightness(0.3);
-    transform: scale(1.6);
+    opacity: 0;
+    transform: scale(1.1);
   }
   to {
-    filter: blur(0) brightness(1);
+    opacity: 1;
     transform: scale(1);
   }
 }
 
 @keyframes fade-blur-main-in {
   from {
-    transform: scale(1.2);
+    transform: scale(1.05);
   }
   to {
     transform: scale(1);
@@ -262,5 +262,18 @@ scrollbar-thumb {
   }
   svg:not([fill]) {
     fill: currentColor;
+  }
+}
+
+// 尊重系统「减少动态效果」设置（保留极短时长，确保 animationend 等事件仍会触发）
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
 }

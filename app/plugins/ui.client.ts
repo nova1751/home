@@ -1,10 +1,30 @@
 import cursorInit from "~/utils/cursor";
 
+// HarmonyOS Sans（font-display: swap）
+const FONT_CSS = "https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css";
+
 // 仅客户端运行的全局交互
 export default defineNuxtPlugin((nuxtApp) => {
+  // 首次访问时 Service Worker 接管页面也会触发 controllerchange，此时并非站点更新
+  const hadController = !!navigator.serviceWorker?.controller;
+
   nuxtApp.hook("app:mounted", () => {
     const store = useMainStore();
     const config = useRuntimeConfig().public;
+
+    // 壁纸就绪（或超时）后再加载字体，避免字体分片与 JS、壁纸争抢带宽
+    const stopFontWatch = watch(
+      () => store.imgLoadStatus,
+      (loaded) => {
+        if (!loaded) return;
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = FONT_CSS;
+        document.head.append(link);
+        queueMicrotask(() => stopFontWatch());
+      },
+      { immediate: true },
+    );
 
     // 自定义鼠标
     cursorInit();
@@ -28,7 +48,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     // PWA 更新提醒
     navigator.serviceWorker?.addEventListener("controllerchange", () => {
-      ElMessage("站点已更新，刷新后生效");
+      if (hadController) ElMessage("站点已更新，刷新后生效");
     });
 
     // 控制台输出

@@ -1,5 +1,5 @@
 <template>
-  <!-- 加载 -->
+  <!-- 加载遮罩 -->
   <Loading />
   <!-- 壁纸 -->
   <Background @load-complete="loadComplete" />
@@ -85,19 +85,17 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  transform: scale(1.2);
   opacity: 0;
   visibility: hidden;
-  transition: transform 0.3s;
+  // 兜底：JS 迟迟未就绪时也显示内容（与 Loading.vue 的兜底同时触发）
+  animation: main-failsafe 0.01s 6s forwards;
   &.ready {
     visibility: visible;
     opacity: 1;
     // 淡入用 transition：若用 animation + forwards，播完后 opacity 效果仍保留，
     // #main 会成为 backdrop root，内部毛玻璃将无法模糊 #main 之外的壁纸
-    transition:
-      opacity 0.3s ease-in-out,
-      transform 0.3s;
-    animation: fade-blur-main-in 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.25s forwards;
+    transition: opacity 0.3s ease-in-out;
+    animation: fade-blur-main-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s backwards;
   }
   .container {
     width: 100%;
@@ -150,6 +148,13 @@ onBeforeUnmount(() => {
     @media (min-width: 721px) {
       display: none;
     }
+  }
+}
+
+@keyframes main-failsafe {
+  to {
+    opacity: 1;
+    visibility: visible;
   }
 }
 </style>

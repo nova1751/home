@@ -1,5 +1,5 @@
 <template>
-  <div id="loader-wrapper" :class="store.imgLoadStatus ? 'loaded' : null">
+  <div v-if="!gone" id="loader-wrapper" :class="store.imgLoadStatus ? 'loaded' : null">
     <div class="loader">
       <div class="loader-circle" />
       <div class="loader-text">
@@ -17,6 +17,17 @@
 <script setup lang="ts">
 const store = useMainStore();
 const siteName = useRuntimeConfig().public.siteName;
+
+// 退场动画约 0.6s，结束后卸载遮罩，释放转圈动画与合成层
+const gone = ref(false);
+let goneTimer: ReturnType<typeof setTimeout> | undefined;
+watch(
+  () => store.imgLoadStatus,
+  (loaded) => {
+    if (loaded) goneTimer = setTimeout(() => (gone.value = true), 700);
+  },
+);
+onBeforeUnmount(() => clearTimeout(goneTimer));
 </script>
 
 <style lang="scss" scoped>
@@ -28,7 +39,12 @@ const siteName = useRuntimeConfig().public.siteName;
   height: 100%;
   z-index: 999;
   overflow: hidden;
+  // 兜底：JS 迟迟未就绪或加载失败时遮罩也会退场（纯 CSS，不依赖 JS）
+  animation: loader-failsafe 0.01s 6s forwards;
   .loader {
+    // 等待不足 0.3s 时不显示转圈，避免一闪而过
+    z-index: 2;
+    animation: fade 0.2s 0.3s both;
     width: 100%;
     height: 100%;
     position: absolute;
@@ -95,6 +111,7 @@ const siteName = useRuntimeConfig().public.siteName;
     height: 100%;
     background: #333;
     z-index: 1;
+    will-change: transform;
     &.section-left {
       left: 0;
     }
@@ -104,10 +121,7 @@ const siteName = useRuntimeConfig().public.siteName;
   }
   &.loaded {
     visibility: hidden;
-    transform: translateY(-100%);
-    transition:
-      transform 0.3s 0.6s ease-out,
-      visibility 0.3s 0.6s ease-out;
+    transition: visibility 0s 0.6s;
     .loader {
       .loader-circle,
       .loader-text {
@@ -125,6 +139,12 @@ const siteName = useRuntimeConfig().public.siteName;
         transition: transform 0.45s 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
       }
     }
+  }
+}
+
+@keyframes loader-failsafe {
+  to {
+    visibility: hidden;
   }
 }
 

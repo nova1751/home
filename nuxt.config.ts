@@ -68,13 +68,6 @@ export default defineNuxtConfig({
         { rel: "icon", type: "image/png", sizes: "32x32", href: env.VITE_SITE_LOGO },
         { rel: "apple-touch-icon", sizes: "180x180", href: env.VITE_SITE_APPLE_LOGO },
         { rel: "preconnect", href: "https://s1.hdslb.com", crossorigin: "" },
-        // HarmonyOS Sans（异步加载，不阻塞首屏渲染；字体本身为 font-display: swap）
-        {
-          rel: "stylesheet",
-          href: "https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css",
-          media: "print",
-          onload: "this.media='all'",
-        },
         {
           rel: "preload",
           href: "/font/Pacifico-Regular.woff2",
