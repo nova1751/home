@@ -4,6 +4,13 @@ import pkg from "./package.json";
 const env = process.env;
 const siteName = env.VITE_SITE_NAME || "Home";
 
+// 默认壁纸数量（public/images/background{1..N}.webp）
+const BG_COUNT = 12;
+
+// 在 HTML 解析阶段就开始下载默认壁纸，无需等待 JS 激活
+// 外部壁纸接口每次返回的图片可能不同，不做预加载
+const bgPreloadScript = `(function(){try{var d=JSON.parse(localStorage.getItem("data")||"{}");if(d.coverType&&d.coverType!=="0")return}catch(e){}var u="/images/background"+(Math.floor(Math.random()*${BG_COUNT})+1)+".webp";window.__BG__=u;var l=document.createElement("link");l.rel="preload";l.as="image";l.href=u;l.fetchPriority="high";document.head.appendChild(l)})()`;
+
 export default defineNuxtConfig({
   compatibilityDate: "2026-11-01",
   ssr: true,
@@ -23,6 +30,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       version: pkg.version,
+      bgCount: BG_COUNT,
       author: pkg.author,
       github: pkg.github,
       home: pkg.home,
@@ -55,14 +63,17 @@ export default defineNuxtConfig({
         { name: "author", content: env.VITE_SITE_ANTHOR },
         { name: "theme-color", content: "#424242" },
       ],
+      script: [{ innerHTML: bgPreloadScript, tagPriority: "critical" }],
       link: [
-        { rel: "icon", href: env.VITE_SITE_LOGO },
-        { rel: "apple-touch-icon", href: env.VITE_SITE_APPLE_LOGO },
+        { rel: "icon", type: "image/png", sizes: "32x32", href: env.VITE_SITE_LOGO },
+        { rel: "apple-touch-icon", sizes: "180x180", href: env.VITE_SITE_APPLE_LOGO },
         { rel: "preconnect", href: "https://s1.hdslb.com", crossorigin: "" },
-        // HarmonyOS Sans
+        // HarmonyOS Sans（异步加载，不阻塞首屏渲染；字体本身为 font-display: swap）
         {
           rel: "stylesheet",
           href: "https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css",
+          media: "print",
+          onload: "this.media='all'",
         },
         {
           rel: "preload",
@@ -91,6 +102,16 @@ export default defineNuxtConfig({
     },
   },
 
+  hooks: {
+    // 不为懒加载分包（盒子、设置页、播放器、错误页等）生成 prefetch，
+    // 避免首屏时与壁纸争抢带宽；这些分包在用到时再加载，PWA 也会在空闲时缓存
+    "build:manifest": (manifest) => {
+      for (const file of Object.values(manifest)) {
+        file.prefetch = false;
+      }
+    },
+  },
+
   nitro: {
     prerender: {
       routes: ["/"],
@@ -108,11 +129,19 @@ export default defineNuxtConfig({
       start_url: "/",
       theme_color: "#424242",
       background_color: "#424242",
-      icons: [48, 72, 96, 128, 144, 192, 512].map((size) => ({
-        src: `/images/icon/${size}.png`,
-        sizes: `${size}x${size}`,
-        type: "image/png",
-      })),
+      icons: [
+        ...[48, 72, 96, 128, 144, 192, 512].map((size) => ({
+          src: `/images/icon/${size}.png`,
+          sizes: `${size}x${size}`,
+          type: "image/png",
+        })),
+        {
+          src: "/images/icon/maskable-512.png",
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "maskable",
+        },
+      ],
     },
     workbox: {
       navigateFallback: "/",

@@ -93,7 +93,7 @@ onBeforeUnmount(() => {
     visibility: visible;
     animation:
       fade 0.3s ease-in-out forwards,
-      fade-blur-main-in 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s forwards;
+      fade-blur-main-in 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.25s forwards;
   }
   .container {
     width: 100%;

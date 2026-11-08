@@ -32,10 +32,10 @@ const store = useMainStore();
 const bgUrl = ref<string | null>(null);
 const emit = defineEmits(["loadComplete"]);
 
-// 默认壁纸数量（public/images/background{1..N}.webp）
-const BG_COUNT = 12;
+// 默认壁纸数量（在 nuxt.config.ts 中配置）
+const BG_COUNT = useRuntimeConfig().public.bgCount;
 // 壁纸加载超时后先展示页面，壁纸加载完成后再淡入
-const BG_TIMEOUT = 3000;
+const BG_TIMEOUT = 2000;
 
 let defaultBg = "";
 let loadTimer: ReturnType<typeof setTimeout> | undefined;
@@ -83,7 +83,10 @@ const imgLoadError = () => {
 watch(() => store.coverType, changeBg);
 
 onMounted(() => {
-  defaultBg = `/images/background${Math.floor(Math.random() * BG_COUNT) + 1}.webp`;
+  // 优先使用 <head> 内联脚本已开始预加载的壁纸
+  defaultBg =
+    (window as { __BG__?: string }).__BG__ ||
+    `/images/background${Math.floor(Math.random() * BG_COUNT) + 1}.webp`;
   changeBg(store.coverType);
   loadTimer = setTimeout(() => {
     if (!store.imgLoadStatus) {
@@ -126,7 +129,7 @@ onBeforeUnmount(() => {
       filter 0.3s,
       transform 0.3s;
     animation: fade-blur-in 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    animation-delay: 0.45s;
+    animation-delay: 0.2s;
   }
   .gray {
     opacity: 1;
