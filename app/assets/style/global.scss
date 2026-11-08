@@ -1,0 +1,8 @@
+// scss 全局变量 / mixin（会注入到每个组件，请勿在此编写会输出 CSS 的规则）
+
+// 响应式布局
+@mixin changeWidth($maxWidth: 1200px) {
+  .container {
+    max-width: $maxWidth;
+  }
+}
