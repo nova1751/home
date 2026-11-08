@@ -91,9 +91,13 @@ onBeforeUnmount(() => {
   transition: transform 0.3s;
   &.ready {
     visibility: visible;
-    animation:
-      fade 0.3s ease-in-out forwards,
-      fade-blur-main-in 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.25s forwards;
+    opacity: 1;
+    // 淡入用 transition：若用 animation + forwards，播完后 opacity 效果仍保留，
+    // #main 会成为 backdrop root，内部毛玻璃将无法模糊 #main 之外的壁纸
+    transition:
+      opacity 0.3s ease-in-out,
+      transform 0.3s;
+    animation: fade-blur-main-in 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.25s forwards;
   }
   .container {
     width: 100%;
