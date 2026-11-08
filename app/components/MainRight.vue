@@ -21,6 +21,8 @@ const { domainName, domainSuffix } = useSite();
 .right {
   // flex: 1 0 0%;
   width: 50%;
+  // Swiper 初始化后右栏不能再收缩；预渲染时就保持一致，避免 JS 激活时布局横移
+  flex-shrink: 0;
   margin-left: 0.75rem;
   .logo {
     width: 100%;

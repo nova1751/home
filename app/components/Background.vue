@@ -1,7 +1,5 @@
 <template>
-  <div :class="store.backgroundShow ? 'cover show' : 'cover'">
-    <!-- 静态模糊层：清晰图只做淡入，不必逐帧计算模糊；淡入完成后移除 -->
-    <img v-if="bgUrl && bgLoaded && !bgRevealed" :src="bgUrl" class="bg-blur" alt="" />
+  <div :class="['cover', { show: store.backgroundShow, revealed: bgRevealed }]">
     <img
       v-if="bgUrl"
       v-show="bgLoaded"
@@ -38,7 +36,7 @@ const emit = defineEmits(["loadComplete"]);
 
 // 默认壁纸数量（在 nuxt.config.ts 中配置）
 const BG_COUNT = useRuntimeConfig().public.bgCount;
-// 壁纸加载超时后不再等待：先退场遮罩、显示内容，壁纸加载完成后再淡入
+// 壁纸加载超时后不再等待：先加载字体、弹出欢迎提示，壁纸加载完成后再淡入
 const BG_TIMEOUT = 2000;
 
 let defaultBg = "";
@@ -124,6 +122,7 @@ onBeforeUnmount(() => {
   height: 100%;
   transition: 0.25s;
   z-index: -1;
+  overflow: hidden;
 
   &.show {
     z-index: 1;
@@ -136,19 +135,20 @@ onBeforeUnmount(() => {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    backface-visibility: hidden;
-    animation: fade-blur-in 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    animation: fade 0.6s ease-out both;
   }
-  .bg-blur {
+  // 模糊占位图：缩略图由 <head> 内联脚本写入 --bg-thumb，首帧即可显示，壁纸淡入后移除
+  &::before {
+    content: "";
     position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: blur(20px) brightness(0.3);
-    // 略微放大，遮住模糊后变透明的边缘
-    transform: scale(1.1);
+    // 向外扩出屏幕，遮住模糊后变透明的边缘（用定值，窄屏上比例放大不够）
+    inset: -100px;
+    background: var(--bg-thumb, none) center / cover no-repeat;
+    // 竖屏上缩略图每像素约被拉到 50px，模糊要足够大，否则看得出方形色块
+    filter: blur(40px);
+  }
+  &.revealed::before {
+    display: none;
   }
   .gray {
     opacity: 1;

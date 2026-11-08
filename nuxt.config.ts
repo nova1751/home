@@ -1,15 +1,16 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import pkg from "./package.json";
+import bgThumbs from "./app/assets/data/bgThumbs.json";
 
 const env = process.env;
 const siteName = env.VITE_SITE_NAME || "Home";
 
 // 默认壁纸数量（public/images/background{1..N}.webp）
-const BG_COUNT = 12;
+const BG_COUNT = bgThumbs.length;
 
-// 在 HTML 解析阶段就开始下载默认壁纸，无需等待 JS 激活
+// 在 HTML 解析阶段就选好默认壁纸：写入模糊缩略图（首帧显示），并开始下载原图，无需等待 JS 激活
 // 外部壁纸接口每次返回的图片可能不同，不做预加载
-const bgPreloadScript = `(function(){try{var d=JSON.parse(localStorage.getItem("data")||"{}");if(d.coverType&&d.coverType!=="0")return}catch(e){}var u="/images/background"+(Math.floor(Math.random()*${BG_COUNT})+1)+".webp";window.__BG__=u;var l=document.createElement("link");l.rel="preload";l.as="image";l.href=u;l.fetchPriority="high";document.head.appendChild(l)})()`;
+const bgPreloadScript = `(function(){try{var d=JSON.parse(localStorage.getItem("data")||"{}");if(d.coverType&&d.coverType!=="0")return}catch(e){}var T=${JSON.stringify(bgThumbs)},i=Math.floor(Math.random()*T.length),u="/images/background"+(i+1)+".webp";window.__BG__=u;document.documentElement.style.setProperty("--bg-thumb",'url("'+T[i]+'")');var l=document.createElement("link");l.rel="preload";l.as="image";l.href=u;l.fetchPriority="high";document.head.appendChild(l)})()`;
 
 export default defineNuxtConfig({
   compatibilityDate: "2026-11-01",

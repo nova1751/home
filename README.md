@@ -198,12 +198,7 @@ make clean all
 
 可以在 `public/images` 中修改网站背景
 
-如果想要添加更多的本地图片作为网站背景，可以将图片转为 webp 并重命名为 `background+数字.webp` 的形式，然后在 `app/components/Background.vue` 中修改图片数量：
-
-```js
-// 默认壁纸数量（public/images/background{1..N}.webp）
-const BG_COUNT = 12;
-```
+如果想要添加更多的本地图片作为网站背景，可以将图片转为 webp 并重命名为 `background+数字.webp` 的形式，然后在 `app/assets/data/bgThumbs.json` 末尾追加一张对应的模糊缩略图（32px 宽 webp 的 base64 data URL）。壁纸数量由这个文件决定，首屏也用它显示模糊占位图。
 
 #### 网站图标
 

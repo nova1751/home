@@ -1,10 +1,8 @@
 <template>
-  <!-- 加载遮罩 -->
-  <Loading />
   <!-- 壁纸 -->
   <Background @load-complete="loadComplete" />
-  <!-- 主界面（预渲染为静态 HTML，壁纸就绪后播放入场动画） -->
-  <main id="main" :class="{ ready: store.imgLoadStatus }">
+  <!-- 主界面（预渲染为静态 HTML，打开即显示） -->
+  <main id="main">
     <div v-show="!store.backgroundShow" class="container">
       <section v-show="!store.setOpenState" class="all">
         <MainLeft />
@@ -85,18 +83,11 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0;
-  visibility: hidden;
-  // 兜底：JS 迟迟未就绪时也显示内容（与 Loading.vue 的兜底同时触发）
-  animation: main-failsafe 0.01s 6s forwards;
-  &.ready {
-    visibility: visible;
-    opacity: 1;
-    // 淡入用 transition：若用 animation + forwards，播完后 opacity 效果仍保留，
-    // #main 会成为 backdrop root，内部毛玻璃将无法模糊 #main 之外的壁纸
-    transition: opacity 0.3s ease-in-out;
-    animation: fade-blur-main-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s backwards;
-  }
+  // 纯 CSS 短入场，不等 JS。不要用 forwards：opacity 动画效果若保留，
+  // #main 会成为 backdrop root，内部毛玻璃将无法模糊 #main 之外的壁纸
+  animation:
+    fade 0.3s ease-out,
+    main-in 0.3s ease-out;
   .container {
     width: 100%;
     height: 100vh;
@@ -148,13 +139,6 @@ onBeforeUnmount(() => {
     @media (min-width: 721px) {
       display: none;
     }
-  }
-}
-
-@keyframes main-failsafe {
-  to {
-    opacity: 1;
-    visibility: visible;
   }
 }
 </style>
