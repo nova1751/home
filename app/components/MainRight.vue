@@ -8,7 +8,7 @@
     <!-- 功能区 -->
     <Func />
     <!-- 网站链接 -->
-    <LazyLinks hydrate-on-idle />
+    <LazyLinks hydrate-on-visible />
   </div>
 </template>
 

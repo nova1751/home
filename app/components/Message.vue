@@ -64,7 +64,7 @@ const changeBox = () => {
     display: flex;
     flex-direction: row;
     align-items: center;
-    animation: fade 0.5s;
+    animation: enter 0.5s;
     max-width: 460px;
     .logo-img {
       border-radius: 50%;
@@ -110,7 +110,7 @@ const changeBox = () => {
     padding: 1rem;
     margin-top: 3.5rem;
     max-width: 460px;
-    animation: fade 0.5s;
+    animation: enter 0.5s;
 
     .content {
       display: flex;

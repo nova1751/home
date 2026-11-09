@@ -5,7 +5,7 @@
       <el-col :span="12">
         <div class="left">
           <Hitokoto />
-          <LazyMusic v-if="playerHasId" hydrate-on-idle />
+          <LazyMusic v-if="playerHasId" hydrate-on-visible />
         </div>
       </el-col>
       <el-col :span="12">

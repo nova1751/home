@@ -36,7 +36,7 @@ const emit = defineEmits(["loadComplete"]);
 
 // 默认壁纸数量（在 nuxt.config.ts 中配置）
 const BG_COUNT = useRuntimeConfig().public.bgCount;
-// 壁纸加载超时后不再等待：先加载字体、弹出欢迎提示，壁纸加载完成后再淡入
+// 壁纸加载超时后先弹出欢迎提示，壁纸加载完成后再淡入
 const BG_TIMEOUT = 2000;
 
 let defaultBg = "";

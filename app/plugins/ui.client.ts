@@ -1,6 +1,5 @@
 import cursorInit from "~/utils/cursor";
 
-// HarmonyOS Sans（font-display: swap）
 const FONT_CSS = "https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css";
 
 // 仅客户端运行的全局交互
@@ -12,19 +11,16 @@ export default defineNuxtPlugin((nuxtApp) => {
     const store = useMainStore();
     const config = useRuntimeConfig().public;
 
-    // 壁纸就绪（或超时）后再加载字体，避免字体分片与 JS、壁纸争抢带宽
-    const stopFontWatch = watch(
-      () => store.imgLoadStatus,
-      (loaded) => {
-        if (!loaded) return;
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = FONT_CSS;
-        document.head.append(link);
-        queueMicrotask(() => stopFontWatch());
-      },
-      { immediate: true },
-    );
+    // 字体分片很多，页面加载完再请求，不与首屏资源争抢带宽（font-display: swap）
+    const loadFont = () => {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = FONT_CSS;
+      link.fetchPriority = "low";
+      document.head.append(link);
+    };
+    if (document.readyState === "complete") loadFont();
+    else window.addEventListener("load", loadFont, { once: true });
 
     // 自定义鼠标
     cursorInit();

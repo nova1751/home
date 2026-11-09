@@ -86,7 +86,7 @@ onBeforeUnmount(() => {
   // 纯 CSS 短入场，不等 JS。不要用 forwards：opacity 动画效果若保留，
   // #main 会成为 backdrop root，内部毛玻璃将无法模糊 #main 之外的壁纸
   animation:
-    fade 0.3s ease-out,
+    enter 0.3s ease-out,
     main-in 0.3s ease-out;
   .container {
     width: 100%;
