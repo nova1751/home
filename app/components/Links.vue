@@ -24,7 +24,7 @@
           <el-col v-for="(item, index) in site" :key="item.name" :span="8">
             <div
               class="item cards"
-              :style="index < 3 ? 'margin-bottom: 20px' : null"
+              :style="{ '--i': index, marginBottom: index < 3 ? '20px' : undefined }"
               @click="jumpLink(item)"
             >
               <Icon size="26">
@@ -93,7 +93,7 @@ const jumpLink = (data: SiteLink) => {
     font-size: 1.1rem;
     display: flex;
     align-items: center;
-    animation: fade 0.5s;
+    animation: rise 0.7s var(--ease-out) 0.24s backwards;
     .title {
       margin-left: 8px;
       font-size: 1.15rem;
@@ -133,12 +133,14 @@ const jumpLink = (data: SiteLink) => {
       flex-direction: row;
       justify-content: center;
       padding: 0 10px;
-      animation: fade 0.5s;
+      animation: rise 0.7s var(--ease-out) calc(0.28s + var(--i) * 0.05s) backwards;
 
+      transition:
+        transform 0.35s var(--ease-out),
+        background-color 0.3s;
       &:hover {
         transform: scale(1.02);
         background: rgb(0 0 0 / 40%);
-        transition: 0.3s;
       }
 
       &:active {

@@ -5,7 +5,7 @@
       <el-col :span="12">
         <div class="left">
           <Hitokoto />
-          <LazyMusic v-if="playerHasId" hydrate-on-visible />
+          <LazyMusic v-if="playerHasId" :hydrate-when="hydrateMusic" />
         </div>
       </el-col>
       <el-col :span="12">
@@ -48,12 +48,19 @@ let timeInterval: ReturnType<typeof setInterval> | undefined;
 // 播放器 id
 const playerHasId = !!useRuntimeConfig().public.songId;
 
+// 音乐组件较大：手机上打开菜单后才激活；有键盘的设备要用空格快捷键，挂载后就激活
+const hasKeyboard = ref(false);
+const hydrateMusic = computed(
+  () => hasKeyboard.value || store.mobileOpenState || (store.innerWidth ?? 0) > 720,
+);
+
 // 更新时间
 const updateTimeData = () => {
   currentTime.value = getCurrentTime();
 };
 
 onMounted(() => {
+  hasKeyboard.value = window.matchMedia("(hover: hover)").matches;
   updateTimeData();
   timeInterval = setInterval(updateTimeData, 1000);
 });
@@ -116,7 +123,7 @@ onBeforeUnmount(() => {
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      animation: fade 0.5s;
+      animation: rise 0.7s var(--ease-out) 0.18s backwards;
       .time {
         font-size: 1.1rem;
         text-align: center;

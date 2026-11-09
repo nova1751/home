@@ -64,8 +64,11 @@ const changeBox = () => {
     display: flex;
     flex-direction: row;
     align-items: center;
-    animation: enter 0.5s;
+    animation: rise 0.7s var(--ease-out) 0s backwards;
     max-width: 460px;
+    // 字号跟随这一栏的实际宽度（而不是窗口宽度），标题在任何布局下都放得下。
+    // 142px 是头像加间距；整个标题约为大字号的 3.9 倍宽，后缀是大字号的 0.4 倍
+    container-type: inline-size;
     .logo-img {
       border-radius: 50%;
       width: 120px;
@@ -78,15 +81,12 @@ const changeBox = () => {
       font-family: "Pacifico-Regular";
 
       .bg {
-        font-size: 5rem;
+        font-size: min(5rem, calc((100cqi - 142px) / 3.9));
       }
 
       .sm {
         margin-left: 6px;
-        font-size: 2rem;
-        @media (min-width: 720px) and (max-width: 789px) {
-          display: none;
-        }
+        font-size: min(2rem, calc((100cqi - 142px) / 9.75));
       }
     }
     @media (max-width: 768px) {
@@ -96,7 +96,10 @@ const changeBox = () => {
       .name {
         height: 128px;
         .bg {
-          font-size: 4.5rem;
+          font-size: min(4.5rem, calc((100cqi - 122px) / 3.9));
+        }
+        .sm {
+          font-size: min(2rem, calc((100cqi - 122px) / 9.75));
         }
       }
     }
@@ -110,7 +113,7 @@ const changeBox = () => {
     padding: 1rem;
     margin-top: 3.5rem;
     max-width: 460px;
-    animation: enter 0.5s;
+    animation: rise 0.7s var(--ease-out) 0.06s backwards;
 
     .content {
       display: flex;

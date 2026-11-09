@@ -38,32 +38,45 @@ const store = useMainStore();
 const openMusicShow = ref(false);
 
 // 一言数据
+const CACHE_KEY = "hitokoto";
 const hitokotoData = reactive({
-  text: "这里应该显示一句话",
-  from: "無名",
+  text: "每一个不曾起舞的日子，都是对生活的辜负！",
+  from: "尼采",
 });
 
 // 获取一言数据
-const getHitokotoData = async () => {
+const getHitokotoData = async (manual = false) => {
   try {
     const result = await getHitokoto();
     hitokotoData.text = result.hitokoto;
     hitokotoData.from = result.from;
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ text: result.hitokoto, from: result.from }));
+    } catch {
+      // 存储不可用时只是下次没有缓存
+    }
   } catch (error) {
     console.error("一言获取失败：", error);
-    ElMessage({
-      message: "一言获取失败",
-      icon: h(Error, { theme: "filled", fill: "#efefef" }),
-    });
-    hitokotoData.text = "这里应该显示一句话";
-    hitokotoData.from = "無名";
+    // 接口偶尔很慢：自动加载失败时保留当前内容，只有用户主动刷新才提示
+    if (manual) {
+      ElMessage({
+        message: "一言获取失败",
+        icon: h(Error, { theme: "filled", fill: "#efefef" }),
+      });
+    }
   }
 };
 
 // 更新一言数据（防抖）
-const updateHitokoto = debounce(getHitokotoData, 500);
+const updateHitokoto = debounce(() => getHitokotoData(true), 500);
 
 onMounted(() => {
+  try {
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) ?? "null");
+    if (cached?.text) Object.assign(hitokotoData, cached);
+  } catch {
+    // 缓存不可用时显示默认内容
+  }
   getHitokotoData();
 });
 
@@ -75,7 +88,7 @@ onBeforeUnmount(() => updateHitokoto.cancel());
   width: 100%;
   height: 100%;
   padding: 20px;
-  animation: fade 0.5s;
+  animation: rise 0.7s var(--ease-out) 0.12s backwards;
   .open-music {
     width: 100%;
     position: absolute;

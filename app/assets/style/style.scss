@@ -27,10 +27,6 @@ p {
   text-decoration: none;
   color: #fff;
   box-sizing: border-box;
-
-  &:hover {
-    transition: 0.3s;
-  }
 }
 
 // 字体文件
@@ -62,9 +58,7 @@ p {
   background-color: #00000040;
   backdrop-filter: blur(10px);
   transform: scale(1);
-  transition:
-    backdrop-filter 0.3s,
-    transform 0.3s;
+  transition: transform 0.35s var(--ease-out);
   &:hover {
     transform: scale(1.01);
   }
@@ -149,6 +143,11 @@ p {
   opacity: 0;
 }
 
+// 全站统一的入场和悬停缓动：起步快、收尾慢
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 // keyframes 动画
 @keyframes fade {
   from {
@@ -159,23 +158,14 @@ p {
   }
 }
 
-// 首屏内容的淡入：从 0.01 而非 0 开始，视觉上没有区别，但第一帧就算作已绘制，
-// 不会把 FCP / LCP 推迟到动画开始之后
-@keyframes enter {
+// 首屏内容依次上浮淡入，只动合成层属性。各块自己做动画，不要加在 #main 上：
+// 祖先的 opacity 动画会让内部毛玻璃模糊不到壁纸。
+// 从 0.01 而非 0 开始，视觉上没有区别，但第一帧就算作已绘制，不会推迟 FCP / LCP。
+// 只写 from：结束时回到元素自身的 transform（如 .cards 的 scale）
+@keyframes rise {
   from {
     opacity: 0.01;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes main-in {
-  from {
-    transform: scale(1.03);
-  }
-  to {
-    transform: scale(1);
+    transform: translateY(14px);
   }
 }
 

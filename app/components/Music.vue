@@ -171,6 +171,7 @@ watch(volumeNum, (value) => {
       text-overflow: ellipsis;
       overflow-x: hidden;
       white-space: nowrap;
+      transition: background-color 0.3s;
       &:hover {
         background: #ffffff4d;
       }
@@ -198,6 +199,9 @@ watch(volumeNum, (value) => {
       justify-content: center;
       border-radius: 6px;
       transform: scale(1);
+      transition:
+        transform 0.3s,
+        background-color 0.3s;
       &:hover {
         background: #ffffff33;
       }
@@ -285,6 +289,7 @@ watch(volumeNum, (value) => {
       width: 28px;
       height: 28px;
       display: block;
+      transition: transform 0.3s;
       &:hover {
         transform: scale(1.2);
       }
@@ -297,15 +302,15 @@ watch(volumeNum, (value) => {
 
 // 弹窗动画
 .zoom-enter-active {
-  animation: zoom 0.4s ease-in-out;
+  animation: zoom 0.35s var(--ease-out);
 }
 .zoom-leave-active {
-  animation: zoom 0.3s ease-in-out reverse;
+  animation: zoom 0.2s ease-in reverse;
 }
 @keyframes zoom {
   0% {
     opacity: 0;
-    transform: scale(0) translateY(-600px);
+    transform: scale(0.94) translateY(12px);
   }
   100% {
     opacity: 1;

@@ -238,6 +238,7 @@ defineExpose({ playToggle, changeVolume, changeSong, toggleList });
           background: #ffffff40;
           border-radius: 6px;
         }
+        transition: background-color 0.3s;
         &:hover {
           background: #ffffff26 !important;
           border-radius: 6px !important;

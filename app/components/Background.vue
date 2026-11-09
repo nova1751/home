@@ -120,7 +120,6 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  transition: 0.25s;
   z-index: -1;
   overflow: hidden;
 
@@ -135,7 +134,8 @@ onBeforeUnmount(() => {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    animation: fade 0.6s ease-out both;
+    // 从模糊占位图融入清晰壁纸，同时轻微回位；不逐帧计算模糊
+    animation: wallpaper-in 1s var(--ease-out) both;
   }
   // 模糊占位图：缩略图由 <head> 内联脚本写入 --bg-thumb，首帧即可显示，壁纸淡入后移除
   &::before {
@@ -161,10 +161,9 @@ onBeforeUnmount(() => {
       radial-gradient(rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0.5) 100%),
       radial-gradient(rgba(0, 0, 0, 0) 33%, rgba(0, 0, 0, 0.3) 166%);
 
-    transition: 1.5s;
+    transition: opacity 1.5s;
     &.hidden {
       opacity: 0;
-      transition: 1.5s;
     }
   }
   .down {
@@ -184,6 +183,9 @@ onBeforeUnmount(() => {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition:
+      transform 0.3s,
+      background-color 0.3s;
     &:hover {
       transform: scale(1.05);
       background-color: #00000060;
@@ -191,6 +193,13 @@ onBeforeUnmount(() => {
     &:active {
       transform: scale(1);
     }
+  }
+}
+
+@keyframes wallpaper-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
   }
 }
 </style>

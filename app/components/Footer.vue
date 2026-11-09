@@ -67,7 +67,7 @@ onMounted(() => (mounted.value = true));
   z-index: 0;
   font-size: 14px;
   .power {
-    animation: fade 0.3s;
+    animation: fade 0.7s ease-out 0.3s backwards;
   }
   .lrc {
     padding: 0 20px;

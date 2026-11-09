@@ -33,13 +33,22 @@ const socialTip = ref("通过这里联系我吧");
   max-width: 460px;
   width: 100%;
   height: 42px;
-  background-color: transparent;
   border-radius: 6px;
-  backdrop-filter: blur(0);
-  animation: fade 0.5s;
-  transition:
-    background-color 0.3s,
-    backdrop-filter 0.3s;
+  position: relative;
+  isolation: isolate;
+  animation: rise 0.7s var(--ease-out) 0.12s backwards;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background-color: #00000040;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
   @media (max-width: 840px) {
     max-width: 100%;
     justify-content: center;
@@ -77,8 +86,9 @@ const socialTip = ref("通过这里联系我吧");
   }
   @media (min-width: 768px) {
     &:hover {
-      background-color: #00000040;
-      backdrop-filter: blur(5px);
+      &::before {
+        opacity: 1;
+      }
       .tip {
         display: block;
       }

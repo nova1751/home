@@ -100,6 +100,7 @@ const jumpTo = (url: string) => {
     width: 28px;
     height: 28px;
 
+    transition: transform 0.3s;
     &:hover {
       transform: scale(1.2);
     }
@@ -154,6 +155,7 @@ const jumpTo = (url: string) => {
           margin-left: 12px;
           margin-top: 6px;
 
+          transition: transform 0.3s;
           &:hover {
             transform: scale(1.2);
           }
