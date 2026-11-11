@@ -66,10 +66,7 @@ It can also be replaced by other methods
 
 ### Music
 
->This project uses the `Aplayer` music player based on `MetingJS` for quick song list customization  
->*Only supported in **Mainland China**
-
-Please change the song related parameters in the `.env` file to customize the song list
+The player uses APlayer. Configure a JSON playlist endpoint in `.env` that allows cross-origin requests and returns a directly playable HTTP(S) `url` for each track. Track availability depends on the endpoint and music service.
 
 ```bash
 # Songs API address

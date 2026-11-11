@@ -25,15 +25,14 @@ export default defineNuxtPlugin((nuxtApp) => {
     // 自定义鼠标
     cursorInit();
 
-    // 屏蔽右键
-    document.addEventListener("contextmenu", (event) => {
-      event.preventDefault();
-      ElMessage({ message: "为了浏览体验，本站禁用右键", grouping: true, duration: 2000 });
-    });
-
     // 鼠标中键切换壁纸展示
     window.addEventListener("mousedown", (event) => {
       if (event.button !== 1) return;
+      if (
+        event.target instanceof Element &&
+        event.target.closest("a, button, input, select, textarea")
+      )
+        return;
       event.preventDefault();
       store.backgroundShow = !store.backgroundShow;
       ElMessage({

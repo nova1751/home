@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import pkg from "./package.json";
 import bgThumbs from "./app/assets/data/bgThumbs.json";
 
@@ -25,7 +27,7 @@ export default defineNuxtConfig({
     "@vite-pwa/nuxt",
   ],
 
-  css: ["swiper/css", "swiper/css/pagination", "~/assets/style/style.scss"],
+  css: ["~/assets/style/style.scss"],
 
   // 站点配置（构建时由 .env 写入）
   runtimeConfig: {
@@ -77,7 +79,6 @@ export default defineNuxtConfig({
           crossorigin: "",
         },
       ],
-      noscript: [{ innerHTML: '<div style="text-align: center">请开启 JavaScript</div>' }],
     },
   },
 
@@ -97,12 +98,29 @@ export default defineNuxtConfig({
   },
 
   hooks: {
-    // 不为懒加载分包（盒子、设置页、播放器、错误页等）生成 prefetch，
-    // 避免首屏时与壁纸争抢带宽；这些分包在用到时再加载，PWA 也会在空闲时缓存
+    // 盒子、设置页和播放器等分包在用到时再加载。
     "build:manifest": (manifest) => {
       for (const file of Object.values(manifest)) {
         file.prefetch = false;
       }
+    },
+    "pwa:beforeBuildServiceWorker": (options) => {
+      // Keep Nuxt's manifest transforms and then select the prerendered shell's resources.
+      const transforms = (options.workbox.manifestTransforms ??= []);
+      transforms.push(async (entries) => {
+        const html = await readFile(join(options.outDir, "index.html"), "utf8");
+        const required = new Set(["/", "/index.html"]);
+        for (const [tag] of html.matchAll(/<(?:link|script|img)\b[^>]*>/g)) {
+          if (tag.startsWith("<link") && !/\brel="(?:stylesheet|modulepreload|preload)"/.test(tag))
+            continue;
+          const resource = tag.match(/\s(?:src|href)="(\/[^/"][^"]*)"/)?.[1];
+          if (resource) required.add(resource.split("?", 1)[0]);
+        }
+        return {
+          manifest: entries.filter(({ url }) => required.has(`/${url.replace(/^\//, "")}`)),
+          warnings: [],
+        };
+      });
     },
   },
 
@@ -142,11 +160,23 @@ export default defineNuxtConfig({
       skipWaiting: true,
       clientsClaim: true,
       cleanupOutdatedCaches: true,
-      // 本站静态资源走预缓存
+      // Allow the revisioned Nuxt payload query to match the precached file.
+      ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^_b$/],
       globPatterns: ["**/*.{js,css,html,woff2,webp,svg}"],
       // 壁纸较大，按需加载后再由运行时缓存
       globIgnores: ["**/images/background*", "**/200.html", "**/404.html"],
       runtimeCaching: [
+        {
+          urlPattern: ({ sameOrigin, url, request }) =>
+            sameOrigin &&
+            url.pathname.startsWith("/_nuxt/") &&
+            ["script", "style"].includes(request.destination),
+          handler: "CacheFirst",
+          options: {
+            cacheName: "nuxt-assets",
+            expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 30 },
+          },
+        },
         {
           // 仅缓存同源图片，跨域壁纸接口（随机图）不缓存
           urlPattern: ({ sameOrigin, request }) => sameOrigin && request.destination === "image",

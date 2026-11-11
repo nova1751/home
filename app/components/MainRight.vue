@@ -1,14 +1,20 @@
 <template>
-  <div :class="store.mobileOpenState ? 'right' : 'right hidden'">
+  <div id="site-panel" :class="store.mobileOpenState ? 'right' : 'right hidden'">
     <!-- 移动端 Logo -->
-    <div class="logo text-hidden" @click="store.mobileFuncState = !store.mobileFuncState">
+    <button
+      type="button"
+      class="logo text-hidden"
+      aria-label="显示一言和音乐"
+      :aria-pressed="store.mobileFuncState"
+      @click="store.mobileFuncState = !store.mobileFuncState"
+    >
       <span class="bg">{{ domainName }}</span>
       <span class="sm">.{{ domainSuffix }}</span>
-    </div>
+    </button>
     <!-- 功能区 -->
-    <Func />
+    <Func class="widgets" />
     <!-- 网站链接 -->
-    <LazyLinks hydrate-on-visible />
+    <Links />
   </div>
 </template>
 
@@ -31,6 +37,8 @@ const { domainName, domainSuffix } = useSite();
     position: fixed;
     top: 6%;
     left: 0;
+    border: 0;
+    background: transparent;
     text-align: center;
     transition: transform 0.3s;
     animation: fade 0.5s;
@@ -45,6 +53,15 @@ const { domainName, domainSuffix } = useSite();
     margin-left: 0;
     width: 100%;
     &.hidden {
+      display: none;
+    }
+  }
+  @media (max-width: 720px) and (scripting: none) {
+    &.hidden {
+      display: block;
+    }
+    .logo,
+    .widgets {
       display: none;
     }
   }

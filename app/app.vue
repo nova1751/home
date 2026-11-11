@@ -2,7 +2,22 @@
   <!-- 壁纸 -->
   <Background @load-complete="loadComplete" />
   <!-- 主界面（预渲染为静态 HTML，打开即显示） -->
-  <main id="main">
+  <main id="main" @keydown.esc="closeMobileMenu">
+    <!-- Place the disclosure before its panel so Tab reaches the revealed links. -->
+    <button
+      v-show="!store.backgroundShow"
+      ref="mobileMenu"
+      class="menu"
+      type="button"
+      aria-controls="site-panel"
+      :aria-expanded="store.mobileOpenState"
+      :aria-label="store.mobileOpenState ? '关闭站点菜单' : '打开站点菜单'"
+      @click="store.mobileOpenState = !store.mobileOpenState"
+    >
+      <Icon size="24" aria-hidden="true">
+        <component :is="store.mobileOpenState ? CloseSmall : HamburgerButton" />
+      </Icon>
+    </button>
     <div v-show="!store.backgroundShow" class="container">
       <section v-show="!store.setOpenState" class="all">
         <MainLeft />
@@ -18,15 +33,6 @@
         <LazyMoreSet />
       </section>
     </div>
-    <!-- 移动端菜单按钮 -->
-    <Icon
-      v-show="!store.backgroundShow"
-      class="menu"
-      size="24"
-      @click="store.mobileOpenState = !store.mobileOpenState"
-    >
-      <component :is="store.mobileOpenState ? CloseSmall : HamburgerButton" />
-    </Icon>
     <!-- 页脚 -->
     <Transition name="fade" mode="out-in">
       <Footer v-show="!store.backgroundShow && !store.setOpenState" />
@@ -40,6 +46,12 @@ import { HamburgerButton, CloseSmall } from "@icon-park/vue-next";
 import { helloInit, checkDays } from "~/utils/getTime";
 
 const store = useMainStore();
+const mobileMenu = ref<HTMLButtonElement | null>(null);
+const closeMobileMenu = () => {
+  if (!store.mobileOpenState || store.musicListShow || store.setOpenState) return;
+  store.mobileOpenState = false;
+  mobileMenu.value?.focus();
+};
 
 // 盒子 / 设置页首次打开时才加载
 const boxLoaded = ref(false);
@@ -113,6 +125,7 @@ onBeforeUnmount(() => {
   }
   .menu {
     position: fixed;
+    z-index: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -120,6 +133,7 @@ onBeforeUnmount(() => {
     left: calc(50% - 28px);
     width: 56px;
     height: 34px;
+    border: 0;
     background: rgb(0 0 0 / 20%);
     backdrop-filter: blur(10px);
     border-radius: 6px;
@@ -128,11 +142,33 @@ onBeforeUnmount(() => {
     &:active {
       transform: scale(0.95);
     }
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 3px;
+    }
     .i-icon {
       transform: translateY(2px);
     }
     @media (min-width: 721px) {
       display: none;
+    }
+  }
+  @media (max-width: 720px) and (scripting: none) {
+    overflow: auto;
+    .container {
+      height: auto;
+      .all {
+        min-height: 100dvh;
+        flex-direction: column;
+        padding: 2rem 0.75rem;
+        gap: 1rem;
+      }
+    }
+    .menu {
+      display: none;
+    }
+    :deep(#footer) {
+      position: static;
     }
   }
 }

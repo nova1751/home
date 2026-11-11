@@ -28,7 +28,7 @@
         <Transition name="fade" mode="out-in">
           <div :key="store.getPlayerLrc" class="lrc-all">
             <music-one theme="filled" size="18" fill="#efefef" />
-            <span class="lrc-text text-hidden" v-html="store.getPlayerLrc" />
+            <span class="lrc-text text-hidden">{{ store.getPlayerLrc }}</span>
             <music-one theme="filled" size="18" fill="#efefef" />
           </div>
         </Transition>

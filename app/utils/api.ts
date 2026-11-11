@@ -1,5 +1,3 @@
-import fetchJsonp from "fetch-jsonp";
-
 // 带超时与状态检查的 JSON 请求
 export const fetchJSON = async <T = any>(url: string, timeout = 8000): Promise<T> => {
   const controller = new AbortController();
@@ -21,6 +19,16 @@ export interface Song {
   lrc: string;
 }
 
+function mediaUrl(value: unknown, base: URL) {
+  if (typeof value !== "string" || !value.trim() || value.trimStart().startsWith("@")) return "";
+  try {
+    const url = new URL(value, base);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
 /**
  * 音乐播放器
  */
@@ -32,28 +40,30 @@ export const getPlayerList = async (
   type: string,
   id: string,
 ): Promise<Song[]> => {
-  const data = await fetchJSON<any[]>(`${api}?server=${server}&type=${type}&id=${id}`, 15000);
-  if (!Array.isArray(data) || !data.length) throw new Error("歌单为空");
+  const endpoint = new URL(api, window.location.href);
+  for (const [key, value] of Object.entries({ server, type, id }))
+    endpoint.searchParams.set(key, value);
+  const data = await fetchJSON<unknown>(endpoint.href, 15000);
+  if (!Array.isArray(data)) throw new Error("歌单接口未返回有效数据");
 
-  const format = (v: any, url: string): Song => ({
-    name: v.name || v.title,
-    artist: v.artist || v.author,
-    url,
-    cover: v.cover || v.pic,
-    lrc: v.lrc,
-  });
-
-  if (data[0].url?.startsWith("@")) {
-    const url = data[0].url.split("@").slice(1)[3];
-    const jsonpData = await fetchJsonp(url).then((res) => res.json());
-    const sip: string[] = jsonpData.req_0.data.sip;
-    const domain = (sip.find((i) => !i.startsWith("http://ws")) || sip[0]).replace(
-      "http://",
-      "https://",
-    );
-    return data.map((v, i) => format(v, domain + jsonpData.req_0.data.midurlinfo[i].purl));
+  const playlist: Song[] = [];
+  for (const entry of data) {
+    if (!entry || typeof entry !== "object") continue;
+    const track = entry as Record<string, unknown>;
+    const url = mediaUrl(track.url, endpoint);
+    if (!url) continue;
+    const name = track.name || track.title;
+    const artist = track.artist || track.author;
+    playlist.push({
+      name: typeof name === "string" ? name : "未知歌曲",
+      artist: typeof artist === "string" ? artist : "未知歌手",
+      url,
+      cover: mediaUrl(track.cover, endpoint) || mediaUrl(track.pic, endpoint),
+      lrc: mediaUrl(track.lrc, endpoint) || "data:text/plain,",
+    });
   }
-  return data.map((v) => format(v, v.url));
+  if (!playlist.length) throw new Error("歌单没有可播放的直链");
+  return playlist;
 };
 
 /**
