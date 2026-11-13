@@ -61,51 +61,60 @@ const changeBox = () => {
 <style lang="scss" scoped>
 .message {
   .logo {
+    --avatar-size: 120px;
+    --logo-gap: 22px;
+    --title-max: 5rem;
     display: flex;
-    flex-direction: row;
     align-items: center;
+    gap: var(--logo-gap);
     animation: rise 0.7s var(--ease-out) 0s backwards;
     max-width: 460px;
     // 字号跟随这一栏的实际宽度（而不是窗口宽度），标题在任何布局下都放得下。
-    // 142px 是头像加间距；整个标题约为大字号的 3.9 倍宽，后缀是大字号的 0.4 倍
+    // 整个标题约为大字号的 3.9 倍宽，后缀是大字号的 0.4 倍
     container-type: inline-size;
     .logo-img {
+      flex: none;
       border-radius: 50%;
-      width: 120px;
+      width: var(--avatar-size);
       height: auto;
     }
     .name {
-      width: 100%;
-      padding-left: 22px;
+      min-width: 0;
+      --title-size: min(
+        var(--title-max),
+        calc((100cqi - var(--avatar-size) - var(--logo-gap)) / 3.9)
+      );
       transform: translateY(-8px);
       font-family: "Pacifico-Regular";
 
       .bg {
-        font-size: min(5rem, calc((100cqi - 142px) / 3.9));
+        font-size: var(--title-size);
       }
 
       .sm {
         margin-left: 6px;
-        font-size: min(2rem, calc((100cqi - 142px) / 9.75));
+        font-size: calc(var(--title-size) * 0.4);
       }
     }
     @media (max-width: 768px) {
-      .logo-img {
-        width: 100px;
-      }
+      --avatar-size: 100px;
+      --title-max: 4.5rem;
       .name {
         height: 128px;
-        .bg {
-          font-size: min(4.5rem, calc((100cqi - 122px) / 3.9));
-        }
-        .sm {
-          font-size: min(2rem, calc((100cqi - 122px) / 9.75));
-        }
       }
     }
 
     @media (max-width: 720px) {
+      --avatar-size: clamp(52px, min(18vw, 15dvh), 100px);
+      --logo-gap: clamp(12px, 3vw, 22px);
+      --title-max: clamp(2rem, 12dvh, 4.5rem);
+      justify-content: center;
       max-width: 100%;
+      .name {
+        height: auto;
+        line-height: 1.35;
+        transform: none;
+      }
     }
   }
 
@@ -137,30 +146,17 @@ const changeBox = () => {
     }
     @media (max-width: 720px) {
       max-width: 100%;
+      margin-top: clamp(0.75rem, 4dvh, 2rem);
       pointer-events: none;
     }
   }
-  @media (max-width: 390px) {
-    .logo {
-      flex-direction: column;
-      .logo-img {
-        display: none;
-      }
-      .name {
-        margin-left: 0;
-        height: auto;
-        transform: none;
-        text-align: center;
-        .bg {
-          font-size: 3.5rem;
-        }
-        .sm {
-          font-size: 1.4rem;
-        }
-      }
-    }
+  @media (max-width: 720px) and (max-height: 540px) {
     .description {
-      margin-top: 2.5rem;
+      padding-block: 0.625rem;
+      .content .text {
+        margin-block: 0.25rem;
+        line-height: 1.5rem;
+      }
     }
   }
 }

@@ -60,7 +60,6 @@ const socialTip = ref("通过这里联系我吧");
       display: none !important;
     }
   }
-
   .link {
     display: flex;
     align-items: center;
@@ -78,6 +77,20 @@ const socialTip = ref("通过这里联系我吧");
         }
       }
     }
+  }
+  @media (max-width: 720px) {
+    .link a {
+      flex: 1;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      .icon {
+        margin: 0;
+      }
+    }
+  }
+  @media (max-width: 720px) and (max-height: 540px) {
+    margin-top: 0.5rem;
   }
   .tip {
     display: none;

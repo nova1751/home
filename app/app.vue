@@ -18,7 +18,7 @@
         <component :is="store.mobileOpenState ? CloseSmall : HamburgerButton" />
       </Icon>
     </button>
-    <div v-show="!store.backgroundShow" class="container">
+    <div v-show="!store.backgroundShow" ref="content" class="container">
       <section v-show="!store.setOpenState" class="all">
         <MainLeft />
         <MainRight v-show="!store.boxOpenState" />
@@ -47,11 +47,17 @@ import { helloInit, checkDays } from "~/utils/getTime";
 
 const store = useMainStore();
 const mobileMenu = ref<HTMLButtonElement | null>(null);
+const content = ref<HTMLDivElement | null>(null);
 const closeMobileMenu = () => {
   if (!store.mobileOpenState || store.musicListShow || store.setOpenState) return;
   store.mobileOpenState = false;
   mobileMenu.value?.focus();
 };
+watch(
+  () => store.mobileOpenState,
+  () => content.value?.scrollTo(0, 0),
+  { flush: "post" },
+);
 
 // 盒子 / 设置页首次打开时才加载
 const boxLoaded = ref(false);
@@ -124,15 +130,11 @@ onBeforeUnmount(() => {
     }
   }
   .menu {
-    position: fixed;
-    z-index: 1;
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
-    top: 84%;
-    left: calc(50% - 28px);
     width: 56px;
-    height: 34px;
+    height: 44px;
     border: 0;
     background: rgb(0 0 0 / 20%);
     backdrop-filter: blur(10px);
@@ -149,23 +151,64 @@ onBeforeUnmount(() => {
     .i-icon {
       transform: translateY(2px);
     }
-    @media (min-width: 721px) {
-      display: none;
-    }
   }
-  @media (max-width: 720px) and (scripting: none) {
+
+  @media (max-width: 720px) {
+    height: 100dvh;
+    display: grid;
+    grid-template:
+      "content" minmax(0, 1fr)
+      "menu" auto
+      "footer" auto / minmax(0, 1fr);
     overflow: auto;
     .container {
+      grid-area: content;
+      overflow-y: auto;
       height: auto;
       .all {
-        min-height: 100dvh;
+        height: auto;
+        min-height: 100%;
         flex-direction: column;
-        padding: 2rem 0.75rem;
-        gap: 1rem;
+        padding: clamp(0.75rem, 3dvh, 2rem) 0.75rem;
       }
     }
     .menu {
+      grid-area: menu;
+      justify-self: center;
+      margin: 4px 0 8px;
+      display: flex;
+    }
+    :deep(#footer) {
+      grid-area: footer;
+      position: static;
+      height: auto;
+      line-height: 36px;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+
+  @media (max-width: 720px) and (scripting: none) {
+    .container .all {
+      gap: 1rem;
+    }
+    .menu {
       display: none;
+    }
+  }
+
+  @media (width > 720px) and (max-height: 560px) {
+    height: 100dvh;
+    overflow-y: auto;
+    .container {
+      height: auto;
+      .all {
+        height: auto;
+        min-height: calc(100dvh - 46px);
+        padding-block: 1rem;
+      }
+    }
+    :deep(.box) {
+      height: 80dvh;
     }
     :deep(#footer) {
       position: static;

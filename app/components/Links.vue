@@ -108,7 +108,7 @@ const openMusic = (event: MouseEvent, name: string) => {
         font-size: 1.1rem;
         margin-left: 8px;
       }
-      @media (min-width: 720px) and (max-width: 820px) {
+      @media (720px < width <= 820px) {
         .name {
           display: none;
         }
@@ -126,7 +126,19 @@ const openMusic = (event: MouseEvent, name: string) => {
       }
     }
     @media (max-width: 720px) {
-      height: 190px;
+      height: auto;
+      overflow: visible;
+    }
+  }
+  @media (max-width: 720px) and (max-height: 540px) {
+    .line {
+      margin-block: 0.75rem 0.5rem;
+    }
+    .link-all {
+      gap: 0.75rem;
+      .item {
+        height: 68px;
+      }
     }
   }
 }

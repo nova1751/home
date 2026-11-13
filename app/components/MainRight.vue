@@ -31,12 +31,11 @@ const { domainName, domainSuffix } = useSite();
   flex-shrink: 0;
   margin-left: 0.75rem;
   .logo {
+    display: none;
     width: 100%;
     font-family: "Pacifico-Regular";
     font-size: 1.75rem;
-    position: fixed;
-    top: 6%;
-    left: 0;
+    margin-bottom: clamp(0.5rem, 2dvh, 1rem);
     border: 0;
     background: transparent;
     text-align: center;
@@ -45,13 +44,13 @@ const { domainName, domainSuffix } = useSite();
     &:active {
       transform: scale(0.95);
     }
-    @media (min-width: 720px) {
-      display: none;
-    }
   }
   @media (max-width: 720px) {
     margin-left: 0;
     width: 100%;
+    .logo {
+      display: block;
+    }
     &.hidden {
       display: none;
     }
