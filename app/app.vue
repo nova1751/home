@@ -148,9 +148,6 @@ onBeforeUnmount(() => {
       outline: 2px solid currentColor;
       outline-offset: 3px;
     }
-    .i-icon {
-      transform: translateY(2px);
-    }
   }
 
   @media (max-width: 720px) {
@@ -161,9 +158,11 @@ onBeforeUnmount(() => {
       "menu" auto
       "footer" auto / minmax(0, 1fr);
     overflow: auto;
+    scrollbar-gutter: stable both-edges;
     .container {
       grid-area: content;
       overflow-y: auto;
+      scrollbar-gutter: stable both-edges;
       height: auto;
       .all {
         height: auto;
@@ -174,8 +173,7 @@ onBeforeUnmount(() => {
     }
     .menu {
       grid-area: menu;
-      justify-self: center;
-      margin: 4px 0 8px;
+      margin: 4px auto 8px;
       display: flex;
     }
     :deep(#footer) {
