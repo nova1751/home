@@ -58,11 +58,9 @@ pnpm build
 
 ### Weather
 
-Weather and area access requires `高德开放平台` related API
+Weather uses Amap and [Open-Meteo](https://open-meteo.com/) by default. Set `VITE_QWEATHER_KEY` and `VITE_QWEATHER_HOST` in the deployment environment to prefer QWeather. Set `VITE_QWEATHER_GEO_HOST` if GeoAPI uses a different host.
 
-- Go to [高德开放平台控制台](https://console.amap.com/dev/index) to create a `Key` of type `Web Service` and fill the `Key` into `VITE_WEATHER_KEY` in `.env` 
-
-It can also be replaced by other methods
+The browser tries Amap, ipwho.is, and IP.SB in order for IP geolocation. If all lookups fail, it shows weather for Hangzhou. Set `VITE_WEATHER_KEY` to the Amap Web Service key.
 
 ### Music
 

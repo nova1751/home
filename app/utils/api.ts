@@ -70,18 +70,3 @@ export const getPlayerList = async (
  * 一言
  */
 export const getHitokoto = () => fetchJSON("https://v1.hitokoto.cn");
-
-/**
- * 天气
- */
-
-// 获取高德地理位置信息
-export const getAdcode = (key: string) => fetchJSON(`https://restapi.amap.com/v3/ip?key=${key}`);
-
-// 获取高德地理天气信息
-export const getWeather = (key: string, city: string) =>
-  fetchJSON(`https://restapi.amap.com/v3/weather/weatherInfo?key=${key}&city=${city}`);
-
-// 获取教书先生天气 API
-// https://api.oioweb.cn/doc/weather/GetWeather
-export const getOtherWeather = () => fetchJSON("https://api.oioweb.cn/api/weather/GetWeather");

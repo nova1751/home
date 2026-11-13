@@ -2,7 +2,7 @@
   <!-- 壁纸 -->
   <Background @load-complete="loadComplete" />
   <!-- 主界面（预渲染为静态 HTML，打开即显示） -->
-  <main id="main" @keydown.esc="closeMobileMenu">
+  <main id="main" ref="main" @keydown.esc="closeMobileMenu">
     <!-- Place the disclosure before its panel so Tab reaches the revealed links. -->
     <button
       v-show="!store.backgroundShow"
@@ -46,6 +46,7 @@ import { HamburgerButton, CloseSmall } from "@icon-park/vue-next";
 import { helloInit, checkDays } from "~/utils/getTime";
 
 const store = useMainStore();
+const main = ref<HTMLElement | null>(null);
 const mobileMenu = ref<HTMLButtonElement | null>(null);
 const content = ref<HTMLDivElement | null>(null);
 const closeMobileMenu = () => {
@@ -55,7 +56,10 @@ const closeMobileMenu = () => {
 };
 watch(
   () => store.mobileOpenState,
-  () => content.value?.scrollTo(0, 0),
+  () => {
+    content.value?.scrollTo(0, 0);
+    main.value?.scrollTo(0, 0);
+  },
   { flush: "post" },
 );
 
@@ -134,7 +138,7 @@ onBeforeUnmount(() => {
     justify-content: center;
     align-items: center;
     width: 56px;
-    height: 44px;
+    height: 36px;
     border: 0;
     background: rgb(0 0 0 / 20%);
     backdrop-filter: blur(10px);
@@ -191,6 +195,16 @@ onBeforeUnmount(() => {
     }
     .menu {
       display: none;
+    }
+  }
+
+  @media (max-width: 720px) and (max-height: 540px) {
+    grid-template-rows: minmax(max-content, 1fr) auto auto;
+    .container {
+      overflow: visible;
+      .all {
+        min-height: 14rem;
+      }
     }
   }
 

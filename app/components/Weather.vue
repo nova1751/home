@@ -1,104 +1,75 @@
 <template>
-  <div v-if="weatherData.adCode.city && weatherData.weather.weather" class="weather">
-    <span>{{ weatherData.adCode.city }}&nbsp;</span>
-    <span>{{ weatherData.weather.weather }}&nbsp;</span>
-    <span>{{ weatherData.weather.temperature }}℃</span>
-    <span class="sm-hidden">
-      &nbsp;{{
-        weatherData.weather.winddirection?.endsWith("风")
-          ? weatherData.weather.winddirection
-          : weatherData.weather.winddirection + "风"
-      }}&nbsp;
-    </span>
-    <span class="sm-hidden">{{ weatherData.weather.windpower }}&nbsp;级</span>
-  </div>
-  <div v-else class="weather">
-    <span>{{ loading ? "天气加载中" : "天气数据获取失败" }}</span>
+  <div ref="weatherCard" class="weather">
+    <template v-if="weather">
+      <span>{{ weather.city }}&nbsp;</span>
+      <span>{{ weather.text }}&nbsp;</span>
+      <span>{{ weather.temp }}℃</span>
+      <span v-if="weather.windDir" class="sm-hidden">
+        &nbsp;{{ weather.windDir.endsWith("风") ? weather.windDir : weather.windDir + "风" }}&nbsp;
+      </span>
+      <span v-if="weather.windScale" class="sm-hidden">{{ weather.windScale }}&nbsp;级</span>
+      <a
+        v-if="weather.source === 'open-meteo'"
+        href="https://open-meteo.com/"
+        target="_blank"
+        rel="noopener"
+        class="weather-source"
+        >Open-Meteo</a
+      >
+    </template>
+    <span v-else>{{ loading ? "天气加载中" : "天气暂不可用" }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { getAdcode, getWeather, getOtherWeather } from "~/utils/api";
-import { Error as ErrorIcon } from "@icon-park/vue-next";
-
-// 高德开发者 Key
-const mainKey = useRuntimeConfig().public.weatherKey;
-
+const config = useRuntimeConfig().public;
+const weatherCard = ref<HTMLDivElement | null>(null);
 const loading = ref(true);
+const weather = ref<{
+  city: string;
+  text: string;
+  temp: string | number;
+  windDir: string;
+  windScale: string;
+  source?: "open-meteo";
+} | null>(null);
+let observer: IntersectionObserver | undefined;
 
-// 天气数据
-const weatherData = reactive({
-  adCode: {
-    city: null as string | null, // 城市
-    adcode: null as string | null, // 城市编码
-  },
-  weather: {
-    weather: null as string | null, // 天气现象
-    temperature: null as string | number | null, // 实时气温
-    winddirection: null as string | null, // 风向描述
-    windpower: null as string | null, // 风力级别
-  },
-});
-
-// 取出天气平均值
-const getTemperature = (min: string | number, max: string | number) => {
-  const average = (Number(min) + Number(max)) / 2;
-  return Number.isNaN(average) ? "NaN" : Math.round(average);
-};
-
-// 获取天气数据
-const getWeatherData = async () => {
+async function loadWeather() {
   try {
-    if (!mainKey) {
-      const { result: data } = await getOtherWeather();
-      weatherData.adCode = {
-        city: data.city.City || "未知地区",
-        adcode: null,
-      };
-      weatherData.weather = {
-        weather: data.condition.day_weather,
-        temperature: getTemperature(data.condition.min_degree, data.condition.max_degree),
-        winddirection: data.condition.day_wind_direction,
-        windpower: data.condition.day_wind_power,
-      };
-    } else {
-      // 获取 Adcode（IP 定位偶尔返回空数组，重试一次）
-      const located = (res: any) => res.infocode === "10000" && typeof res.adcode === "string";
-      let adCode = await getAdcode(mainKey);
-      if (!located(adCode)) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        adCode = await getAdcode(mainKey);
-      }
-      if (!located(adCode)) {
-        throw new Error("地区查询失败");
-      }
-      weatherData.adCode = {
-        city: adCode.city,
-        adcode: adCode.adcode,
-      };
-      // 获取天气信息
-      const result = await getWeather(mainKey, adCode.adcode);
-      const live = result.lives?.[0];
-      if (!live) throw new Error("天气查询失败");
-      weatherData.weather = {
-        weather: live.weather,
-        temperature: live.temperature,
-        winddirection: live.winddirection,
-        windpower: live.windpower,
-      };
-    }
-  } catch (error) {
-    console.error("天气信息获取失败:", error);
-    ElMessage({
-      message: "天气信息获取失败",
-      icon: h(ErrorIcon, { theme: "filled", fill: "#efefef" }),
-    });
+    const { getLocalWeather } = await import("~/utils/weather");
+    const { city, now } = await getLocalWeather(config);
+    weather.value = { city, ...now };
+  } catch {
+    // 天气卡片内显示请求结果。
   } finally {
     loading.value = false;
   }
-};
+}
 
 onMounted(() => {
-  getWeatherData();
+  if (!weatherCard.value || !("IntersectionObserver" in window)) {
+    void loadWeather();
+    return;
+  }
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer?.disconnect();
+      void loadWeather();
+    },
+    { rootMargin: "300px 0px" },
+  );
+  observer.observe(weatherCard.value);
 });
+
+onBeforeUnmount(() => observer?.disconnect());
 </script>
+
+<style scoped>
+.weather-source {
+  margin-inline-start: 0.35em;
+  font-size: 0.7em;
+  text-decoration: underline;
+}
+</style>

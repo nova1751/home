@@ -124,11 +124,9 @@ const siteIcon = {
 
 ### 天气
 
-天气及地区获取需要 `高德开放平台` 相关 API
+默认使用高德及 [Open-Meteo](https://open-meteo.com/) 查询天气。可在部署环境配置 `VITE_QWEATHER_KEY` 和 `VITE_QWEATHER_HOST`，优先使用和风实时天气。若 GeoAPI 使用不同域名，可配置 `VITE_QWEATHER_GEO_HOST`。
 
-- 前往 [高德开放平台控制台](https://console.amap.com/dev/index) 创建一个 `Web 服务` 类型的 `Key`，并将 `Key` 填入 `.env` 中的 `VITE_WEATHER_KEY` 中
-
-也可自行更换其他方式
+浏览器依次尝试高德、ipwho.is、IP.SB 的 IP 定位服务，全部失败时显示杭州天气。高德 Web 服务 Key 通过 `VITE_WEATHER_KEY` 配置。
 
 
 ### 音乐

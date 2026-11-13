@@ -111,8 +111,11 @@ const changeBox = () => {
       justify-content: center;
       max-width: 100%;
       .name {
+        --descender-space: calc(var(--title-size) * 0.25);
         height: auto;
         line-height: 1.35;
+        padding-bottom: var(--descender-space);
+        margin-bottom: calc(-1 * var(--descender-space));
         transform: none;
       }
     }
