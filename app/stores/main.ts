@@ -39,7 +39,7 @@ export const useMainStore = defineStore("main", {
     // 更改当前页面宽度
     setInnerWidth(value: number) {
       this.innerWidth = value;
-      if (value >= 720) {
+      if (value > 720) {
         this.mobileOpenState = false;
         this.mobileFuncState = false;
       }

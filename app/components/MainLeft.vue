@@ -21,6 +21,7 @@ const store = useMainStore();
   @media (max-width: 720px) {
     margin-right: 0;
     width: 100%;
+    transform: none;
   }
 }
 </style>
