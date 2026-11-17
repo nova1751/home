@@ -63,7 +63,10 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: "zh-CN" },
       title: siteName,
       meta: [
-        { name: "viewport", content: "width=device-width, initial-scale=1.0" },
+        {
+          name: "viewport",
+          content: "width=device-width, initial-scale=1.0, viewport-fit=cover",
+        },
         { name: "description", content: env.VITE_SITE_DES },
         { name: "keywords", content: env.VITE_SITE_KEYWORDS },
         { name: "author", content: env.VITE_SITE_ANTHOR },

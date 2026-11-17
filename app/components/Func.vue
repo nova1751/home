@@ -1,6 +1,6 @@
 <template>
   <!-- 功能区域 -->
-  <div :class="store.mobileFuncState ? 'function mobile' : 'function'">
+  <div class="function">
     <el-row :gutter="20">
       <el-col :span="12">
         <div class="left">
@@ -86,18 +86,6 @@ onBeforeUnmount(() => {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  &.mobile {
-    .el-row {
-      .el-col {
-        &:nth-of-type(1) {
-          display: contents;
-        }
-        &:nth-of-type(2) {
-          display: none;
-        }
-      }
-    }
-  }
   .el-row {
     height: 100%;
     width: 100%;
@@ -109,7 +97,7 @@ onBeforeUnmount(() => {
       &:nth-of-type(2) {
         padding-right: 0 !important;
       }
-      @media (max-width: 910px) {
+      @media (720px < width <= 910px) {
         &:nth-of-type(1) {
           display: none;
         }
@@ -148,12 +136,30 @@ onBeforeUnmount(() => {
           font-family: "UnidreamLED Clock", monospace;
         }
       }
-      .weather {
-        text-align: center;
+    }
+  }
+  @media (max-width: 720px) {
+    height: auto;
+    .el-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.75rem;
+      > .el-col {
+        display: block;
         width: 100%;
-        text-overflow: ellipsis;
-        overflow-x: hidden;
-        white-space: nowrap;
+        max-width: none;
+        padding: 0 !important;
+      }
+      .right {
+        padding: 0.75rem 1rem;
+        gap: 0.35rem;
+        .time {
+          font-size: 0.95rem;
+          .text {
+            font-size: 2.75rem;
+            margin-top: 0.2rem;
+          }
+        }
       }
     }
   }

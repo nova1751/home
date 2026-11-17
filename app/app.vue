@@ -19,7 +19,11 @@
       </Icon>
     </button>
     <div v-show="!store.backgroundShow" ref="content" class="container">
-      <section v-show="!store.setOpenState" class="all">
+      <section
+        v-show="!store.setOpenState"
+        class="all"
+        :class="{ 'sites-open': store.mobileOpenState }"
+      >
         <MainLeft />
         <MainRight v-show="!store.boxOpenState" />
         <LazyBox v-if="boxLoaded" v-show="store.boxOpenState" />
@@ -112,7 +116,8 @@ onBeforeUnmount(() => {
     .all {
       width: 100%;
       height: 100%;
-      padding: 0 0.75rem;
+      padding-left: max(0.75rem, env(safe-area-inset-left));
+      padding-right: max(0.75rem, env(safe-area-inset-right));
       display: flex;
       flex-direction: row;
       justify-content: center;
@@ -162,17 +167,20 @@ onBeforeUnmount(() => {
       "menu" auto
       "footer" auto / minmax(0, 1fr);
     overflow: auto;
-    scrollbar-gutter: stable both-edges;
     .container {
       grid-area: content;
       overflow-y: auto;
-      scrollbar-gutter: stable both-edges;
       height: auto;
+      padding: 0;
       .all {
         height: auto;
         min-height: 100%;
         flex-direction: column;
-        padding: clamp(0.75rem, 3dvh, 2rem) 0.75rem;
+        padding-bottom: clamp(0.75rem, 3dvh, 2rem);
+        padding-top: max(clamp(0.75rem, 3dvh, 2rem), env(safe-area-inset-top));
+        &.sites-open {
+          justify-content: flex-start;
+        }
       }
     }
     .menu {
@@ -184,8 +192,6 @@ onBeforeUnmount(() => {
       grid-area: footer;
       position: static;
       height: auto;
-      line-height: 36px;
-      padding-bottom: env(safe-area-inset-bottom);
     }
   }
 
@@ -198,16 +204,6 @@ onBeforeUnmount(() => {
     }
   }
 
-  @media (max-width: 720px) and (max-height: 540px) {
-    grid-template-rows: minmax(max-content, 1fr) auto auto;
-    .container {
-      overflow: visible;
-      .all {
-        min-height: 14rem;
-      }
-    }
-  }
-
   @media (width > 720px) and (max-height: 560px) {
     height: 100dvh;
     overflow-y: auto;
@@ -215,8 +211,9 @@ onBeforeUnmount(() => {
       height: auto;
       .all {
         height: auto;
-        min-height: calc(100dvh - 46px);
-        padding-block: 1rem;
+        min-height: calc(100dvh - 46px - env(safe-area-inset-bottom));
+        padding-top: max(1rem, env(safe-area-inset-top));
+        padding-bottom: 1rem;
       }
     }
     :deep(.box) {
