@@ -61,9 +61,8 @@ onMounted(() => (mounted.value = true));
   position: absolute;
   bottom: 0;
   left: 0;
-  height: calc(46px + env(safe-area-inset-bottom));
+  height: 46px;
   line-height: 46px;
-  padding-bottom: env(safe-area-inset-bottom);
   text-align: center;
   z-index: 0;
   font-size: 14px;
@@ -103,19 +102,6 @@ onMounted(() => (mounted.value = true));
   }
   @media (max-width: 720px) {
     font-size: 0.85rem;
-    line-height: 1.4;
-    padding-left: max(0.5rem, env(safe-area-inset-left));
-    padding-right: max(0.5rem, env(safe-area-inset-right));
-    .power,
-    .lrc {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 0 0.4rem;
-      min-height: 36px;
-      padding-block: 0.4rem;
-    }
     &.blur {
       font-size: 0.85rem;
     }

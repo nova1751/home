@@ -1,15 +1,22 @@
 <template>
-  <div v-show="!store.musicOpenState" class="hitokoto cards" @click.stop>
+  <div
+    v-show="!store.musicOpenState"
+    class="hitokoto cards"
+    @mouseenter="openMusicShow = true"
+    @mouseleave="openMusicShow = false"
+    @click.stop
+  >
     <!-- 打开音乐面板 -->
-    <button
-      v-if="store.musicIsOk"
-      type="button"
-      class="open-music"
-      @click="store.musicOpenState = true"
-    >
-      <music-menu theme="filled" size="18" fill="#efefef" />
-      <span>打开音乐播放器</span>
-    </button>
+    <Transition name="el-fade-in-linear">
+      <div
+        v-show="openMusicShow && store.musicIsOk"
+        class="open-music"
+        @click="store.musicOpenState = true"
+      >
+        <music-menu theme="filled" size="18" fill="#efefef" />
+        <span>打开音乐播放器</span>
+      </div>
+    </Transition>
     <!-- 一言内容 -->
     <Transition name="el-fade-in-linear" mode="out-in">
       <div :key="hitokotoData.text" class="content" @click="updateHitokoto">
@@ -26,6 +33,9 @@ import { MusicMenu, Error } from "@icon-park/vue-next";
 import { getHitokoto } from "~/utils/api";
 
 const store = useMainStore();
+
+// 开启音乐面板按钮显隐
+const openMusicShow = ref(false);
 
 // 一言数据
 const CACHE_KEY = "hitokoto";
@@ -88,13 +98,8 @@ onBeforeUnmount(() => updateHitokoto.cancel());
     align-items: center;
     justify-content: center;
     background: #00000026;
-    border: 0;
-    font: inherit;
     padding: 4px 0;
     border-radius: 8px 8px 0 0;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
     .i-icon {
       width: 18px;
       height: 18px;
@@ -104,11 +109,6 @@ onBeforeUnmount(() => updateHitokoto.cancel());
     span {
       font-size: 0.95rem;
     }
-  }
-  &:hover .open-music,
-  .open-music:focus-visible {
-    opacity: 1;
-    pointer-events: auto;
   }
   .content {
     height: 100%;
@@ -129,29 +129,6 @@ onBeforeUnmount(() => updateHitokoto.cancel());
       font-weight: bold;
       align-self: flex-end;
       font-size: 1.1rem;
-    }
-  }
-  @media (max-width: 720px) {
-    padding: 0.75rem 1rem;
-    .open-music {
-      position: static;
-      width: fit-content;
-      min-height: 36px;
-      margin: 0 0 0.35rem auto;
-      padding-inline: 0.6rem;
-      border-radius: 6px;
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .content {
-      height: auto;
-      .text,
-      .from {
-        font-size: 0.95rem;
-      }
-      .from {
-        margin-top: 0.35rem;
-      }
     }
   }
 }

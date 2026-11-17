@@ -1,6 +1,16 @@
 <template>
   <div id="site-panel" :class="store.mobileOpenState ? 'right' : 'right hidden'">
-    <h1 class="site-title">{{ domain }}</h1>
+    <!-- 移动端 Logo -->
+    <button
+      type="button"
+      class="logo text-hidden"
+      aria-label="显示一言和音乐"
+      :aria-pressed="store.mobileFuncState"
+      @click="store.mobileFuncState = !store.mobileFuncState"
+    >
+      <span class="bg">{{ domainName }}</span>
+      <span class="sm">.{{ domainSuffix }}</span>
+    </button>
     <!-- 功能区 -->
     <Func class="widgets" />
     <!-- 网站链接 -->
@@ -11,7 +21,6 @@
 <script setup lang="ts">
 const store = useMainStore();
 const { domainName, domainSuffix } = useSite();
-const domain = [domainName, domainSuffix].filter(Boolean).join(".");
 </script>
 
 <style lang="scss" scoped>
@@ -21,22 +30,27 @@ const domain = [domainName, domainSuffix].filter(Boolean).join(".");
   // Swiper 初始化后右栏不能再收缩；预渲染时就保持一致，避免 JS 激活时布局横移
   flex-shrink: 0;
   margin-left: 0.75rem;
-  .site-title {
+  .logo {
     display: none;
     width: 100%;
     font-family: "Pacifico-Regular";
-    font-size: clamp(2.8rem, 12vw, 4.25rem);
-    font-weight: 400;
+    font-size: clamp(2.8rem, 11vw, 4rem);
     line-height: 1.4;
     padding-bottom: 0.2em;
-    margin: 0 0 clamp(0.5rem, 2dvh, 1rem);
+    margin-bottom: clamp(0.5rem, 2dvh, 1rem);
+    border: 0;
+    background: transparent;
     text-align: center;
-    overflow-wrap: anywhere;
+    transition: transform 0.3s;
+    animation: fade 0.5s;
+    &:active {
+      transform: scale(0.95);
+    }
   }
   @media (max-width: 720px) {
     margin-left: 0;
     width: 100%;
-    .site-title {
+    .logo {
       display: block;
     }
     &.hidden {
@@ -47,7 +61,7 @@ const domain = [domainName, domainSuffix].filter(Boolean).join(".");
     &.hidden {
       display: block;
     }
-    .site-title,
+    .logo,
     .widgets {
       display: none;
     }

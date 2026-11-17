@@ -18,7 +18,6 @@ interface CurrentWeather {
   temp: string;
   windDir: string;
   windScale: string;
-  source?: "open-meteo";
 }
 
 const fallback: Location = { city: "杭州市", location: "120.155070,30.274085" };
@@ -153,112 +152,50 @@ async function resolveLocation(config: WeatherConfig): Promise<Location> {
   return place;
 }
 
-const weatherLabels: Record<number, string> = {
-  0: "晴",
-  1: "大部晴朗",
-  2: "多云",
-  3: "阴",
-  45: "雾",
-  48: "雾",
-  51: "毛毛雨",
-  53: "毛毛雨",
-  55: "毛毛雨",
-  56: "冻雨",
-  57: "冻雨",
-  61: "小雨",
-  63: "中雨",
-  65: "大雨",
-  66: "冻雨",
-  67: "冻雨",
-  71: "小雪",
-  73: "中雪",
-  75: "大雪",
-  77: "雪粒",
-  80: "阵雨",
-  81: "阵雨",
-  82: "强阵雨",
-  85: "阵雪",
-  86: "强阵雪",
-  95: "雷雨",
-  96: "雷雨伴冰雹",
-  99: "雷雨伴冰雹",
-};
-
-async function getOpenMeteoWeather(location: string): Promise<CurrentWeather> {
-  const [longitude, latitude] = location.split(",");
-  const url = new URL("https://api.open-meteo.com/v1/forecast");
-  url.search = new URLSearchParams({
-    longitude,
-    latitude,
-    current: "temperature_2m,weather_code,wind_speed_10m,wind_direction_10m",
-    wind_speed_unit: "ms",
-  }).toString();
-  const { current } = await fetchJSON<{
-    current?: {
-      temperature_2m: number;
-      weather_code: number;
-      wind_speed_10m: number;
-      wind_direction_10m: number;
-    };
-  }>(url.href, timeout);
-  if (!current || !Number.isFinite(current.temperature_2m)) throw new Error("实时天气查询失败");
-  const directions = ["北", "东北", "东", "东南", "南", "西南", "西", "西北"];
-  const windDir = directions[Math.round(current.wind_direction_10m / 45) % 8] || "";
-  const thresholds = [0.3, 1.6, 3.4, 5.5, 8, 10.8, 13.9, 17.2, 20.8, 24.5, 28.5, 32.7];
-  const windScale = Number.isFinite(current.wind_speed_10m)
-    ? String(thresholds.filter((speed) => current.wind_speed_10m >= speed).length)
-    : "";
-  return {
-    text: weatherLabels[current.weather_code] || "天气未知",
-    temp: String(Math.round(current.temperature_2m)),
-    windDir,
-    windScale,
-    source: "open-meteo",
-  };
-}
-
 async function loadCurrentWeather(config: WeatherConfig, place: Location): Promise<CurrentWeather> {
-  try {
-    if (config.qweatherKey && config.qweatherHost) {
+  if (config.qweatherKey && config.qweatherHost) {
+    try {
       const result = await fetchJSON<{ code: string; now?: CurrentWeather }>(
         weatherUrl(config.qweatherHost, "/v7/weather/now", config.qweatherKey, place.location),
         timeout,
       );
       if (result.code === "200" && result.now?.text) return result.now;
+    } catch {
+      // 和风天气失败后尝试高德。
     }
-    const adcode = place.adcode || (place === fallback ? "330100" : "");
-    if (config.weatherKey && adcode) {
-      const url = new URL("https://restapi.amap.com/v3/weather/weatherInfo");
-      url.search = new URLSearchParams({ key: config.weatherKey, city: adcode }).toString();
-      const result = await fetchJSON<{
-        lives?: {
-          weather: string;
-          temperature: string;
-          winddirection: string;
-          windpower: string;
-        }[];
-      }>(url.href, timeout);
-      const live = result.lives?.[0];
-      if (live?.weather) {
-        return {
-          text: live.weather,
-          temp: live.temperature,
-          windDir: live.winddirection,
-          windScale: live.windpower,
-        };
-      }
-    }
-  } catch {
-    // 首选服务失败时按同一坐标请求天气。
   }
-  return getOpenMeteoWeather(place.location);
+  const adcode = place.adcode || (place === fallback ? "330100" : "");
+  if (config.weatherKey && adcode) {
+    const url = new URL("https://restapi.amap.com/v3/weather/weatherInfo");
+    url.search = new URLSearchParams({ key: config.weatherKey, city: adcode }).toString();
+    const result = await fetchJSON<{
+      lives?: {
+        weather: string;
+        temperature: string;
+        winddirection: string;
+        windpower: string;
+      }[];
+    }>(url.href, timeout);
+    const live = result.lives?.[0];
+    if (live?.weather) {
+      return {
+        text: live.weather,
+        temp: live.temperature,
+        windDir: live.winddirection,
+        windScale: live.windpower,
+      };
+    }
+  }
+  throw new Error("实时天气查询失败");
 }
 
 export async function getLocalWeather(config: WeatherConfig) {
   const place = await resolveLocation(config);
   const cacheKey = "home-weather-current";
-  const cached = readCache<{ location: string; now: CurrentWeather }>(cacheKey);
-  if (cached?.location === place.location && cached.now?.text) {
+  const cached = readCache<{ location: string; now: CurrentWeather & { source?: string } }>(
+    cacheKey,
+  );
+  if (cached?.location === place.location && cached.now?.text && !cached.now.source) {
     return { city: place.city || "未知地区", now: cached.now };
   }
   const now = await loadCurrentWeather(config, place);

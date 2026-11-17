@@ -58,7 +58,7 @@ pnpm build
 
 ### Weather
 
-Weather uses Amap and [Open-Meteo](https://open-meteo.com/) by default. Set `VITE_QWEATHER_KEY` and `VITE_QWEATHER_HOST` in the deployment environment to prefer QWeather. Set `VITE_QWEATHER_GEO_HOST` if GeoAPI uses a different host.
+Weather uses Amap by default and requires `VITE_WEATHER_KEY`. Set `VITE_QWEATHER_KEY` and `VITE_QWEATHER_HOST` in the deployment environment to prefer QWeather. Set `VITE_QWEATHER_GEO_HOST` if GeoAPI uses a different host.
 
 The browser tries Amap, ipwho.is, and IP.SB in order for IP geolocation. If all lookups fail, it shows weather for Hangzhou. Set `VITE_WEATHER_KEY` to the Amap Web Service key.
 

@@ -1,18 +1,9 @@
-import { messageConfig } from "element-plus";
 import cursorInit from "~/utils/cursor";
 
 const FONT_CSS = "https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css";
 
 // 仅客户端运行的全局交互
 export default defineNuxtPlugin((nuxtApp) => {
-  const mobileLayout = window.matchMedia("(max-width: 720px)");
-  const positionMessages = () => {
-    messageConfig.placement = mobileLayout.matches ? "bottom" : "top";
-    messageConfig.offset = mobileLayout.matches ? 92 : 16;
-  };
-  positionMessages();
-  mobileLayout.addEventListener("change", positionMessages);
-
   // 首次访问时 Service Worker 接管页面也会触发 controllerchange，此时并非站点更新
   const hadController = !!navigator.serviceWorker?.controller;
 

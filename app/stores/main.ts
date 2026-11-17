@@ -17,6 +17,7 @@ export const useMainStore = defineStore("main", {
     backgroundShow: false, // 壁纸展示状态
     boxOpenState: false, // 盒子开启状态
     mobileOpenState: false, // 移动端开启状态
+    mobileFuncState: false, // 移动端功能区开启状态
     setOpenState: false, // 设置页面开启状态
     playerState: false, // 当前是否正在播放
     playerTitle: null as string | null, // 当前播放歌曲名
@@ -40,6 +41,7 @@ export const useMainStore = defineStore("main", {
       this.innerWidth = value;
       if (value > 720) {
         this.mobileOpenState = false;
+        this.mobileFuncState = false;
       }
       if (value < 990) {
         this.boxOpenState = false;
