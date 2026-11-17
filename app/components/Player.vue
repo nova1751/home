@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import { MusicOne, PlayWrong } from "@icon-park/vue-next";
-import { getPlayerList, type Song } from "~/utils/api";
+import { getPlayerList, musicServiceUnavailable, type Song } from "~/utils/api";
 
 // APlayer 体积较大，单独拆包按需加载
 const APlayer = defineAsyncComponent(() => import("@worstone/vue-aplayer"));
@@ -50,6 +50,7 @@ const props = defineProps({
   },
   // 歌曲 API 地址
   songApi: { type: String, required: true },
+  songFallbackApi: { type: String, default: "" },
   // 歌曲服务器 ( netease-网易云, tencent-qq音乐 )
   songServer: { type: String, default: "netease" },
   // 播放类型 ( song-歌曲, playlist-播放列表, album-专辑, search-搜索, artist-艺术家 )
@@ -72,6 +73,7 @@ onMounted(async () => {
       props.songServer,
       props.songType,
       props.songId,
+      props.songFallbackApi,
     );
     // 更改播放器加载状态
     store.musicIsOk = true;
@@ -147,7 +149,29 @@ const toggleList = () => {
 };
 
 // 加载音频错误
-const loadMusicError = () => {
+let recoveryAttempted = false;
+const loadMusicError = async () => {
+  const current = playList.value[player.value?.aplayer.index ?? 0];
+  if (!recoveryAttempted && props.songFallbackApi && current) {
+    const resume = !player.value?.audioRef.paused;
+    recoveryAttempted = true;
+    try {
+      if (await musicServiceUnavailable(current.url, props.songApi)) {
+        const alternate = await getPlayerList(props.songFallbackApi, props.songServer, props.songType, props.songId);
+        clearTimeout(player.value?.skipForwardTimeout);
+        player.value?.clearList();
+        playList.value = alternate;
+        await nextTick();
+        player.value?.switchList(0);
+        if (resume) player.value?.play();
+        ElMessage({ message: "音乐服务暂不可用，已切换原来的接口", grouping: true });
+        return;
+      }
+      recoveryAttempted = false;
+    } catch {
+      // A failed fallback is attempted only once, avoiding an endless error loop.
+    }
+  }
   const notice =
     playList.value.length > 1 ? "播放歌曲出现错误，播放器将在 2s 后进行下一首" : "播放歌曲出现错误";
   ElMessage({

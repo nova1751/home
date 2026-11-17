@@ -52,6 +52,7 @@ export default defineNuxtConfig({
       siteStart: env.VITE_SITE_START || "",
       siteIcp: env.VITE_SITE_ICP || "",
       songApi: env.VITE_SONG_API || "",
+      songFallbackApi: env.VITE_SONG_FALLBACK_API || "",
       songServer: env.VITE_SONG_SERVER || "netease",
       songType: env.VITE_SONG_TYPE || "playlist",
       songId: env.VITE_SONG_ID || "",

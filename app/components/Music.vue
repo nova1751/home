@@ -59,6 +59,7 @@
             <Player
               ref="playerRef"
               :song-api="playerData.api"
+              :song-fallback-api="config.songFallbackApi"
               :song-server="playerData.server"
               :song-type="playerData.type"
               :song-id="playerData.id"
