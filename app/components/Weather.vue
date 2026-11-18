@@ -1,29 +1,39 @@
 <template>
   <div ref="weatherCard" class="weather">
     <template v-if="weather">
-      <span>{{ weather.city }}&nbsp;</span>
-      <span>{{ weather.text }}&nbsp;</span>
-      <span>{{ weather.temp }}℃</span>
-      <span v-if="weather.windDir" class="sm-hidden">
-        &nbsp;{{ weather.windDir.endsWith("风") ? weather.windDir : weather.windDir + "风" }}&nbsp;
-      </span>
-      <span v-if="weather.windScale" class="sm-hidden">{{ weather.windScale }}&nbsp;级</span>
+      <span class="weather-city" :title="weather.city">{{ weather.city }}</span>
+      <span>{{ weather.text }}&nbsp;{{ weather.temp }}℃</span>
+      <span v-if="wind" class="sm-hidden">{{ wind }}</span>
+      <a
+        v-if="weather.source === 'open-meteo'"
+        class="weather-credit"
+        href="https://open-meteo.com/en/license"
+        target="_blank"
+        rel="noopener"
+        :aria-label="credit"
+        :title="credit"
+      >
+        <span aria-hidden="true">ⓘ</span>
+      </a>
     </template>
     <span v-else>{{ loading ? "天气加载中" : "天气暂不可用" }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { CurrentWeather } from "~/utils/weather";
+
 const config = useRuntimeConfig().public;
 const weatherCard = ref<HTMLDivElement | null>(null);
 const loading = ref(true);
-const weather = ref<{
-  city: string;
-  text: string;
-  temp: string | number;
-  windDir: string;
-  windScale: string;
-} | null>(null);
+const weather = ref<(CurrentWeather & { city: string }) | null>(null);
+const credit = "天气数据由 Open-Meteo 提供（CC BY 4.0，已转换天气描述和风力等级）";
+const wind = computed(() => {
+  if (!weather.value) return "";
+  const { windDir, windScale } = weather.value;
+  const direction = windDir && !windDir.endsWith("风") ? windDir + "风" : windDir;
+  return [direction, windScale && windScale + " 级"].filter(Boolean).join(" ");
+});
 let observer: IntersectionObserver | undefined;
 
 async function loadWeather() {
@@ -56,3 +66,41 @@ onMounted(() => {
 
 onBeforeUnmount(() => observer?.disconnect());
 </script>
+
+<style scoped>
+.weather {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35em;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.weather-city {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weather-credit {
+  display: grid;
+  flex: 0 0 24px;
+  min-height: 24px;
+  place-items: center;
+  border-radius: 6px;
+  font: 1rem/1 system-ui, sans-serif;
+  opacity: 0.75;
+}
+
+.weather-credit:hover,
+.weather-credit:focus-visible {
+  background: rgb(255 255 255 / 12%);
+  opacity: 1;
+}
+
+.weather-credit:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+</style>

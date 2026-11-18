@@ -148,13 +148,6 @@ onBeforeUnmount(() => {
           font-family: "UnidreamLED Clock", monospace;
         }
       }
-      .weather {
-        text-align: center;
-        width: 100%;
-        text-overflow: ellipsis;
-        overflow-x: hidden;
-        white-space: nowrap;
-      }
     }
   }
 }
