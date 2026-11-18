@@ -200,16 +200,6 @@ onBeforeUnmount(() => {
     }
   }
 
-  @media (max-width: 720px) and (max-height: 540px) {
-    grid-template-rows: minmax(max-content, 1fr) auto auto;
-    .container {
-      overflow: visible;
-      .all {
-        min-height: 14rem;
-      }
-    }
-  }
-
   @media (width > 720px) and (max-height: 560px) {
     height: 100dvh;
     overflow-y: auto;
