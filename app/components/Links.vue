@@ -5,6 +5,16 @@
         <Link />
       </Icon>
       <span class="title">网站列表</span>
+      <button
+        v-if="playerConfigured"
+        type="button"
+        class="player-toggle"
+        aria-controls="music-controls"
+        :aria-expanded="playerVisible"
+        @click="togglePlayer"
+      >
+        音乐播放器
+      </button>
     </div>
     <nav class="link-all" aria-label="网站列表">
       <a
@@ -34,6 +44,13 @@ import { Link, Blog, CompactDisc, Cloud, Compass, Book, Fire, LaptopCode } from 
 import siteLinks from "~/assets/data/siteLinks.json";
 
 const store = useMainStore();
+const playerConfigured = !!useRuntimeConfig().public.songId;
+const playerVisible = computed(() => store.mobileFuncState && store.musicOpenState);
+
+const togglePlayer = () => {
+  store.musicOpenState = !playerVisible.value;
+  store.mobileFuncState = true;
+};
 
 // 网站链接图标
 const siteIcon: Record<string, Component> = {
@@ -67,6 +84,26 @@ const openMusic = (event: MouseEvent, name: string) => {
       margin-left: 8px;
       font-size: 1.15rem;
       text-shadow: 0 0 5px #00000050;
+    }
+    .player-toggle {
+      display: none;
+      margin-inline-start: auto;
+      min-height: 36px;
+      padding: 0 0.65rem;
+      border: 0;
+      border-radius: 6px;
+      background: #ffffff26;
+      font: inherit;
+      font-size: 0.9rem;
+      &:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+      }
+    }
+    @media (max-width: 720px) and (scripting: enabled) {
+      .player-toggle {
+        display: block;
+      }
     }
   }
   .link-all {

@@ -80,6 +80,7 @@ onMounted(async () => {
   } catch (err) {
     console.error("播放器加载失败：", err);
     store.musicIsOk = false;
+    store.musicLoadFailed = true;
     ElMessage({
       message: "播放器加载失败",
       grouping: true,

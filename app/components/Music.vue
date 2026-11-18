@@ -2,6 +2,7 @@
   <!-- 音乐控制面板 -->
   <div
     v-show="store.musicOpenState"
+    id="music-controls"
     class="music"
     @mouseenter="volumeShow = true"
     @mouseleave="volumeShow = false"
@@ -20,11 +21,7 @@
     </div>
     <div class="menu">
       <div v-show="!volumeShow" class="name">
-        <span>{{
-          store.getPlayerData.name
-            ? store.getPlayerData.name + " - " + store.getPlayerData.artist
-            : "未播放音乐"
-        }}</span>
+        <span>{{ playerStatus }}</span>
       </div>
       <div v-show="volumeShow" class="volume">
         <div class="icon">
@@ -107,6 +104,12 @@ const playerData = {
   type: config.songType,
   id: config.songId,
 };
+
+const playerStatus = computed(() => {
+  if (!store.musicIsOk) return store.musicLoadFailed ? "歌单暂不可用" : "歌单加载中";
+  const { name, artist } = store.getPlayerData;
+  return name ? name + " - " + artist : "未播放音乐";
+});
 
 // 开关播放列表
 watch(
