@@ -4,38 +4,56 @@
     v-show="store.musicOpenState"
     id="music-controls"
     class="music"
-    @mouseenter="volumeShow = true"
-    @mouseleave="volumeShow = false"
+    @mouseenter="volumeHovered = true"
+    @mouseleave="volumeHovered = false"
+    @focusin="onMusicFocusIn"
+    @focusout="onMusicFocusOut"
   >
     <div class="btns">
-      <span @click="store.musicListShow = true">音乐列表</span>
-      <span @click="store.musicOpenState = false">回到一言</span>
+      <button type="button" @click="store.musicListShow = true">音乐列表</button>
+      <button type="button" @click="store.musicOpenState = false">回到一言</button>
     </div>
     <div class="control">
-      <go-start theme="filled" size="30" fill="#efefef" @click="changeMusicIndex(0)" />
-      <div class="state" @click="changePlayState">
-        <play-one v-show="!store.playerState" theme="filled" size="50" fill="#efefef" />
-        <pause v-show="store.playerState" theme="filled" size="50" fill="#efefef" />
-      </div>
-      <go-end theme="filled" size="30" fill="#efefef" @click="changeMusicIndex(1)" />
+      <button type="button" aria-label="上一首" @click="changeMusicIndex(0)">
+        <go-start theme="filled" size="30" fill="#efefef" aria-hidden="true" />
+      </button>
+      <button type="button" class="state" :aria-label="store.playerState ? '暂停' : '播放'" @click="changePlayState">
+        <play-one v-show="!store.playerState" theme="filled" size="50" fill="#efefef" aria-hidden="true" />
+        <pause v-show="store.playerState" theme="filled" size="50" fill="#efefef" aria-hidden="true" />
+      </button>
+      <button type="button" aria-label="下一首" @click="changeMusicIndex(1)">
+        <go-end theme="filled" size="30" fill="#efefef" aria-hidden="true" />
+      </button>
     </div>
-    <div class="menu">
-      <div v-show="!volumeShow" class="name">
-        <span>{{ playerStatus }}</span>
+    <div class="menu" :class="{ 'retry-menu': store.musicLoadFailed && !store.musicRetrying }">
+      <div
+        v-show="!volumeShow || store.musicLoadFailed || store.musicRetrying"
+        class="name"
+        :class="{ 'retry-status': store.musicLoadFailed && !store.musicRetrying }"
+      >
+        <span role="status" aria-live="polite">{{ playerStatus }}</span>
+        <button
+          v-if="store.musicLoadFailed && !store.musicRetrying"
+          type="button"
+          class="retry"
+          aria-label="重新加载音乐"
+          @click="playerRef?.retryLoad()"
+        >重试</button>
       </div>
-      <div v-show="volumeShow" class="volume">
+      <div v-show="volumeShow && !store.musicLoadFailed && !store.musicRetrying" class="volume">
         <div class="icon">
-          <volume-mute v-if="volumeNum == 0" theme="filled" size="24" fill="#efefef" />
+          <volume-mute v-if="volumeNum == 0" theme="filled" size="24" fill="#efefef" aria-hidden="true" />
           <volume-small
             v-else-if="volumeNum > 0 && volumeNum < 0.7"
             theme="filled"
             size="24"
             fill="#efefef"
+            aria-hidden="true"
           />
-          <volume-notice v-else theme="filled" size="24" fill="#efefef" />
+          <volume-notice v-else theme="filled" size="24" fill="#efefef" aria-hidden="true" />
         </div>
         <ClientOnly>
-          <el-slider v-model="volumeNum" :show-tooltip="false" :min="0" :max="1" :step="0.01" />
+          <el-slider v-model="volumeNum" aria-label="音量" :show-tooltip="false" :min="0" :max="1" :step="0.01" />
         </ClientOnly>
       </div>
     </div>
@@ -45,13 +63,14 @@
     <div v-show="store.musicListShow" class="music-list" @click="store.musicListShow = false">
       <Transition name="zoom">
         <div v-show="store.musicListShow" class="list" @click.stop>
-          <close-one
+          <button
             class="close"
-            theme="filled"
-            size="28"
-            fill="#ffffff60"
+            type="button"
+            aria-label="关闭音乐列表"
             @click="store.musicListShow = false"
-          />
+          >
+            <close-one theme="filled" size="28" fill="#ffffff60" aria-hidden="true" />
+          </button>
           <ClientOnly>
             <Player
               ref="playerRef"
@@ -85,7 +104,18 @@ const store = useMainStore();
 const config = useRuntimeConfig().public;
 
 // 音量条数据
-const volumeShow = ref(false);
+const volumeHovered = ref(false);
+const volumeFocused = ref(false);
+const volumeShow = computed(() => volumeHovered.value || volumeFocused.value);
+const onMusicFocusIn = (event: FocusEvent) => {
+  if ((event.target as HTMLElement | null)?.matches(":focus-visible")) volumeFocused.value = true;
+};
+const onMusicFocusOut = (event: FocusEvent) => {
+  const next = event.relatedTarget;
+  if (!(next instanceof Node) || !(event.currentTarget as HTMLElement).contains(next)) {
+    volumeFocused.value = false;
+  }
+};
 const volumeNum = computed({
   get: () => store.musicVolume,
   set: (value: number) => (store.musicVolume = value),
@@ -97,6 +127,7 @@ const playerRef = ref<{
   changeVolume: (value: number) => void;
   changeSong: (type: number) => void;
   toggleList: () => void;
+  retryLoad: () => void;
 } | null>(null);
 const playerData = {
   api: config.songApi,
@@ -106,6 +137,7 @@ const playerData = {
 };
 
 const playerStatus = computed(() => {
+  if (store.musicRetrying) return "正在重试…";
   if (!store.musicIsOk) return store.musicLoadFailed ? "歌单暂不可用" : "歌单加载中";
   const { name, artist } = store.getPlayerData;
   return name ? name + " - " + artist : "未播放音乐";
@@ -167,8 +199,12 @@ watch(volumeNum, (value) => {
     display: flex;
     align-items: center;
     margin-bottom: 6px;
-    span {
+    button {
       background: #ffffff26;
+      border: 0;
+      color: inherit;
+      cursor: pointer;
+      font: inherit;
       padding: 2px 8px;
       border-radius: 6px;
       margin: 0px 6px;
@@ -179,6 +215,10 @@ watch(volumeNum, (value) => {
       &:hover {
         background: #ffffff4d;
       }
+      &:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+      }
     }
   }
   .control {
@@ -187,6 +227,21 @@ watch(volumeNum, (value) => {
     align-items: center;
     justify-content: space-evenly;
     width: 100%;
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      &:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+    }
     .state {
       .i-icon {
         width: 50px;
@@ -222,6 +277,10 @@ watch(volumeNum, (value) => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    &.retry-menu {
+      height: 36px;
+      line-height: normal;
+    }
     .name {
       width: 100%;
       text-align: center;
@@ -229,6 +288,30 @@ watch(volumeNum, (value) => {
       overflow-x: hidden;
       white-space: nowrap;
       animation: fade 0.3s;
+      &.retry-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .retry {
+        min-height: 36px;
+        padding: 2px 8px;
+        border: 0;
+        border-radius: 6px;
+        background: #ffffff26;
+        color: inherit;
+        cursor: pointer;
+        font: inherit;
+        transition: background-color 0.3s;
+        &:hover {
+          background: #ffffff4d;
+        }
+        &:focus-visible {
+          outline: 2px solid currentColor;
+          outline-offset: 2px;
+        }
+      }
     }
     .volume {
       width: 100%;
@@ -293,12 +376,22 @@ watch(volumeNum, (value) => {
       width: 28px;
       height: 28px;
       display: block;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
       transition: transform 0.3s;
       &:hover {
         transform: scale(1.2);
       }
       &:active {
         transform: scale(0.95);
+      }
+      &:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+        border-radius: 6px;
       }
     }
   }

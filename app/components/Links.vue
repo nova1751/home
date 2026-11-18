@@ -9,11 +9,11 @@
         v-if="playerConfigured"
         type="button"
         class="widget-toggle"
-        aria-controls="quote-and-music"
-        :aria-expanded="store.mobileFuncState"
+        aria-controls="home-widgets"
+        :aria-label="store.mobileFuncState ? '切换到时钟和天气' : '切换到一言和音乐'"
         @click="store.toggleMobileWidgets"
       >
-        一言&音乐
+        {{ store.mobileFuncState ? "时钟&天气" : "一言&音乐" }}
       </button>
     </div>
     <nav class="link-all" aria-label="网站列表">
@@ -94,7 +94,7 @@ const openMusic = (event: MouseEvent, name: string) => {
         outline-offset: 2px;
       }
     }
-    @media (max-width: 720px) and (scripting: enabled) {
+    @media (max-width: 910px) and (scripting: enabled) {
       .widget-toggle {
         display: block;
       }

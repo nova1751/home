@@ -10,13 +10,14 @@
     <!-- 打开音乐面板 -->
     <Transition name="el-fade-in-linear">
       <button
-        v-show="mobileMusic || (openMusicShow && store.musicIsOk)"
+        v-if="musicEntryAvailable"
         type="button"
         class="open-music"
+        :class="{ 'open-music-visible': mobileMusic || openMusicShow }"
         aria-controls="music-controls"
         @click="store.musicOpenState = true"
       >
-        <music-menu theme="filled" size="18" fill="#efefef" />
+        <music-menu theme="filled" size="18" fill="#efefef" aria-hidden="true" />
         <span>打开音乐播放器</span>
       </button>
     </Transition>
@@ -38,6 +39,9 @@ import { getHitokoto } from "~/utils/api";
 const props = defineProps<{ playerConfigured: boolean }>();
 const store = useMainStore();
 const mobileMusic = computed(() => props.playerConfigured && store.mobileFuncState);
+const musicEntryAvailable = computed(
+  () => props.playerConfigured && (mobileMusic.value || store.musicIsOk || store.musicLoadFailed || store.musicRetrying),
+);
 
 // 开启音乐面板按钮显隐
 const openMusicShow = ref(false);
@@ -113,6 +117,14 @@ onBeforeUnmount(() => updateHitokoto.cancel());
     font: inherit;
     padding: 4px 0;
     border-radius: 8px 8px 0 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    &.open-music-visible,
+    &:focus-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
     &:focus-visible {
       outline: 2px solid currentColor;
       outline-offset: -2px;

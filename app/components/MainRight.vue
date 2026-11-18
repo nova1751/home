@@ -1,16 +1,10 @@
 <template>
   <div id="site-panel" :class="store.mobileOpenState ? 'right' : 'right hidden'">
     <!-- 移动端 Logo -->
-    <button
-      type="button"
-      class="logo text-hidden"
-      aria-label="显示一言和音乐"
-      :aria-pressed="store.mobileFuncState"
-      @click="store.toggleMobileWidgets"
-    >
+    <div class="logo text-hidden">
       <span class="bg">{{ domainName }}</span>
       <span class="sm">.{{ domainSuffix }}</span>
-    </button>
+    </div>
     <!-- 功能区 -->
     <Func class="widgets" />
     <!-- 网站链接 -->
@@ -41,11 +35,7 @@ const { domainName, domainSuffix } = useSite();
     border: 0;
     background: transparent;
     text-align: center;
-    transition: transform 0.3s;
     animation: fade 0.5s;
-    &:active {
-      transform: scale(0.95);
-    }
   }
   @media (max-width: 720px) {
     margin-left: 0;

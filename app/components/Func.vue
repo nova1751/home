@@ -1,9 +1,9 @@
 <template>
   <!-- 功能区域 -->
-  <div :class="store.mobileFuncState ? 'function mobile' : 'function'">
+  <div id="home-widgets" :class="store.mobileFuncState ? 'function mobile' : 'function'">
     <el-row :gutter="20">
       <el-col :span="12">
-        <div id="quote-and-music" class="left">
+        <div class="left">
           <Hitokoto :player-configured="playerHasId" />
           <LazyMusic v-if="playerHasId" :hydrate-when="hydrateMusic" />
         </div>

@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import { MusicOne, PlayWrong } from "@icon-park/vue-next";
-import { getPlayerList, musicServiceUnavailable, type Song } from "~/utils/api";
+import { getPlayerList, HttpRequestError, musicServiceUnavailable, type Song } from "~/utils/api";
 
 // APlayer 体积较大，单独拆包按需加载
 const APlayer = defineAsyncComponent(() => import("@worstone/vue-aplayer"));
@@ -65,28 +65,72 @@ const props = defineProps({
 
 const listHeight = computed(() => props.listMaxHeight + "px");
 
-// 初始化播放器
-onMounted(async () => {
+let mounted = false;
+let loading = false;
+let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+// Retry only once automatically; client errors are left for a manual retry.
+const loadPlaylist = async (allowAutomaticRetry: boolean) => {
+  if (loading || !mounted) return;
+  loading = true;
   try {
-    playList.value = await getPlayerList(
+    const list = await getPlayerList(
       props.songApi,
       props.songServer,
       props.songType,
       props.songId,
       props.songFallbackApi,
     );
-    // 更改播放器加载状态
+    if (!mounted) return;
+    playList.value = list;
     store.musicIsOk = true;
+    store.musicLoadFailed = false;
   } catch (err) {
-    console.error("播放器加载失败：", err);
+    if (!mounted) return;
     store.musicIsOk = false;
     store.musicLoadFailed = true;
+    const isClientError = err instanceof HttpRequestError && err.status >= 400 && err.status < 500;
+    if (allowAutomaticRetry && !isClientError) {
+      store.musicRetrying = true;
+      retryTimer = setTimeout(() => {
+        retryTimer = undefined;
+        loading = false;
+        void loadPlaylist(false);
+      }, 2000);
+      return;
+    }
+    console.error("播放器加载失败：", err);
     ElMessage({
       message: "播放器加载失败",
       grouping: true,
       icon: h(PlayWrong, { theme: "filled", fill: "#efefef" }),
     });
+  } finally {
+    if (mounted && retryTimer === undefined) {
+      loading = false;
+      store.musicRetrying = false;
+    }
   }
+};
+
+const retryLoad = () => {
+  if (loading || !mounted) return;
+  store.musicRetrying = true;
+  void loadPlaylist(false);
+};
+
+onMounted(() => {
+  mounted = true;
+  store.musicIsOk = false;
+  store.musicLoadFailed = false;
+  store.musicRetrying = false;
+  void loadPlaylist(true);
+});
+
+onBeforeUnmount(() => {
+  mounted = false;
+  clearTimeout(retryTimer);
+  store.musicRetrying = false;
 });
 
 // 播放
@@ -187,7 +231,7 @@ const loadMusicError = async () => {
 };
 
 // 暴露子组件方法
-defineExpose({ playToggle, changeVolume, changeSong, toggleList });
+defineExpose({ playToggle, changeVolume, changeSong, toggleList, retryLoad });
 </script>
 
 <style lang="scss" scoped>

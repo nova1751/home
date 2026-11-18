@@ -12,6 +12,7 @@ export const useMainStore = defineStore("main", {
     musicClick: false, // 音乐链接是否跳转
     musicIsOk: false, // 音乐是否加载完成
     musicLoadFailed: false,
+    musicRetrying: false,
     musicVolume: 0.7, // 音乐音量
     musicOpenState: false, // 音乐面板开启状态
     musicListShow: false, // 音乐列表弹窗开启状态
@@ -46,6 +47,8 @@ export const useMainStore = defineStore("main", {
       this.innerWidth = value;
       if (value > 720) {
         this.mobileOpenState = false;
+      }
+      if (value > 910) {
         this.mobileFuncState = false;
       }
       if (value < 990) {
