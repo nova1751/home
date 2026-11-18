@@ -3,8 +3,8 @@
   <div :class="store.mobileFuncState ? 'function mobile' : 'function'">
     <el-row :gutter="20">
       <el-col :span="12">
-        <div class="left">
-          <Hitokoto />
+        <div id="quote-and-music" class="left">
+          <Hitokoto :player-configured="playerHasId" />
           <LazyMusic v-if="playerHasId" :hydrate-when="hydrateMusic" />
         </div>
       </el-col>

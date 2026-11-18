@@ -2,20 +2,23 @@
   <div
     v-show="!store.musicOpenState"
     class="hitokoto cards"
+    :class="{ 'mobile-music': mobileMusic }"
     @mouseenter="openMusicShow = true"
     @mouseleave="openMusicShow = false"
     @click.stop
   >
     <!-- 打开音乐面板 -->
     <Transition name="el-fade-in-linear">
-      <div
-        v-show="openMusicShow && store.musicIsOk"
+      <button
+        v-show="mobileMusic || (openMusicShow && store.musicIsOk)"
+        type="button"
         class="open-music"
+        aria-controls="music-controls"
         @click="store.musicOpenState = true"
       >
         <music-menu theme="filled" size="18" fill="#efefef" />
         <span>打开音乐播放器</span>
-      </div>
+      </button>
     </Transition>
     <!-- 一言内容 -->
     <Transition name="el-fade-in-linear" mode="out-in">
@@ -32,7 +35,9 @@ import { debounce } from "lodash-es";
 import { MusicMenu, Error } from "@icon-park/vue-next";
 import { getHitokoto } from "~/utils/api";
 
+const props = defineProps<{ playerConfigured: boolean }>();
 const store = useMainStore();
+const mobileMusic = computed(() => props.playerConfigured && store.mobileFuncState);
 
 // 开启音乐面板按钮显隐
 const openMusicShow = ref(false);
@@ -89,6 +94,12 @@ onBeforeUnmount(() => updateHitokoto.cancel());
   height: 100%;
   padding: 20px;
   animation: rise 0.7s var(--ease-out) 0.12s backwards;
+  &.mobile-music {
+    padding-top: 38px;
+    .open-music {
+      min-height: 34px;
+    }
+  }
   .open-music {
     width: 100%;
     position: absolute;
@@ -98,8 +109,14 @@ onBeforeUnmount(() => updateHitokoto.cancel());
     align-items: center;
     justify-content: center;
     background: #00000026;
+    border: 0;
+    font: inherit;
     padding: 4px 0;
     border-radius: 8px 8px 0 0;
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: -2px;
+    }
     .i-icon {
       width: 18px;
       height: 18px;

@@ -6,7 +6,7 @@
       class="logo text-hidden"
       aria-label="显示一言和音乐"
       :aria-pressed="store.mobileFuncState"
-      @click="store.mobileFuncState = !store.mobileFuncState"
+      @click="store.toggleMobileWidgets"
     >
       <span class="bg">{{ domainName }}</span>
       <span class="sm">.{{ domainSuffix }}</span>

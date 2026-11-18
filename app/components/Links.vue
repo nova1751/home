@@ -8,12 +8,12 @@
       <button
         v-if="playerConfigured"
         type="button"
-        class="player-toggle"
-        aria-controls="music-controls"
-        :aria-expanded="playerVisible"
-        @click="togglePlayer"
+        class="widget-toggle"
+        aria-controls="quote-and-music"
+        :aria-expanded="store.mobileFuncState"
+        @click="store.toggleMobileWidgets"
       >
-        音乐播放器
+        一言&音乐
       </button>
     </div>
     <nav class="link-all" aria-label="网站列表">
@@ -45,12 +45,6 @@ import siteLinks from "~/assets/data/siteLinks.json";
 
 const store = useMainStore();
 const playerConfigured = !!useRuntimeConfig().public.songId;
-const playerVisible = computed(() => store.mobileFuncState && store.musicOpenState);
-
-const togglePlayer = () => {
-  store.musicOpenState = !playerVisible.value;
-  store.mobileFuncState = true;
-};
 
 // 网站链接图标
 const siteIcon: Record<string, Component> = {
@@ -85,7 +79,7 @@ const openMusic = (event: MouseEvent, name: string) => {
       font-size: 1.15rem;
       text-shadow: 0 0 5px #00000050;
     }
-    .player-toggle {
+    .widget-toggle {
       display: none;
       margin-inline-start: auto;
       min-height: 36px;
@@ -101,7 +95,7 @@ const openMusic = (event: MouseEvent, name: string) => {
       }
     }
     @media (max-width: 720px) and (scripting: enabled) {
-      .player-toggle {
+      .widget-toggle {
         display: block;
       }
     }

@@ -37,6 +37,10 @@ export const useMainStore = defineStore("main", {
     getInnerWidth: (state) => state.innerWidth,
   },
   actions: {
+    toggleMobileWidgets() {
+      this.mobileFuncState = !this.mobileFuncState;
+      if (this.mobileFuncState) this.musicOpenState = false;
+    },
     // 更改当前页面宽度
     setInnerWidth(value: number) {
       this.innerWidth = value;
