@@ -71,15 +71,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-@font-face {
-  font-family: "UnidreamLED Clock";
-  font-display: swap;
-  src: url("/font/UnidreamLED-Clock.woff2") format("woff2");
-  ascent-override: 92.8%;
-  descent-override: 24.4%;
-  line-gap-override: 0%;
-}
-
 .function {
   height: 165px;
   display: flex;
@@ -145,7 +136,7 @@ onBeforeUnmount(() => {
           margin-top: 10px;
           font-size: 3.25rem;
           letter-spacing: 2px;
-          font-family: "UnidreamLED Clock", monospace;
+          font-family: "UnidreamLED";
         }
       }
       .weather {
