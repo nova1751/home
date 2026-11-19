@@ -210,6 +210,8 @@ make clean all
 
 ### API
 
+* [必应每日壁纸](https://bing.biturl.top/)
+* [小小 API 随机风景](https://xxapi.cn/doc/random4kPic)
 * [ZHUQIY 随机动漫壁纸 API](https://r.zhuqiy.com/)
 * [搏天 API](https://api.btstu.cn/doc/sjbz.php)
 * [教书先生 API](https://api.oioweb.cn/doc/weather/GetWeather)

@@ -8,6 +8,7 @@ export const useMainStore = defineStore("main", {
     imgLoadStatus: false, // 壁纸加载状态
     innerWidth: null as number | null, // 当前窗口宽度
     coverType: "0", // 壁纸种类
+    wallpaperStatus: "ready" as "loading" | "ready" | "error",
     wallpaperRefresh: 0,
     siteStartShow: false, // 建站日期显示
     musicClick: false, // 音乐链接是否跳转

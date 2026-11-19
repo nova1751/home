@@ -117,15 +117,8 @@ const openMusic = (event: MouseEvent, name: string) => {
       flex-direction: row;
       justify-content: center;
       padding: 0 10px;
-      animation: rise 0.7s var(--ease-out) calc(0.28s + var(--i) * 0.05s) backwards;
-
-      transition:
-        scale var(--card-scale-duration, 0.35s) var(--ease-out),
-        background-color 0.3s;
-      @media (hover: hover) {
-        &:hover:not(:active) {
-          background: rgb(0 0 0 / 40%);
-        }
+      > * {
+        animation: fade 0.3s ease-out calc(var(--i) * 0.025s) backwards;
       }
 
       .name {

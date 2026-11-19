@@ -10,13 +10,23 @@
             <el-radio value="3" size="large" border>随机动漫</el-radio>
           </el-radio-group>
           <button
-            v-if="coverType === '3'"
+            v-if="coverType === '2' || coverType === '3' || store.wallpaperStatus === 'error'"
+            :disabled="store.wallpaperStatus === 'loading'"
             type="button"
             class="refresh-wallpaper"
             @click="store.wallpaperRefresh++"
           >
-            换一张动漫壁纸
+            {{
+              store.wallpaperStatus === "loading"
+                ? "正在换图…"
+                : store.wallpaperStatus === "error"
+                  ? "重新加载"
+                  : "换一张壁纸"
+            }}
           </button>
+          <span role="status" class="wallpaper-status">{{
+            store.wallpaperStatus === "error" ? "加载失败，已保留当前壁纸" : ""
+          }}</span>
         </div>
       </el-collapse-item>
       <el-collapse-item title="个性化调整" name="2">
@@ -119,10 +129,23 @@ const activeName = ref("1");
     padding: 6px 12px;
     font: inherit;
     color: inherit;
-    background: transparent;
-    border: 0;
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    min-height: 44px;
+    width: 100%;
+    background: #ffffff24;
+    border: 1px solid #ffffff45;
+    border-radius: 6px;
+    cursor: pointer;
+    &:disabled {
+      cursor: wait;
+    }
+    &:active:enabled {
+      background: #ffffff40;
+    }
+  }
+  .wallpaper-status:not(:empty) {
+    display: block;
+    margin-top: 8px;
+    text-align: center;
   }
   .collapse {
     border-radius: 8px;

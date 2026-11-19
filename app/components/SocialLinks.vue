@@ -36,7 +36,9 @@ const socialTip = ref("通过这里联系我吧");
   border-radius: 6px;
   position: relative;
   isolation: isolate;
-  animation: rise 0.7s var(--ease-out) 0.12s backwards;
+  .link {
+    animation: fade 0.3s ease-out;
+  }
   &::before {
     content: "";
     position: absolute;

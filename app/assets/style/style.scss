@@ -60,34 +60,21 @@ p {
   border-radius: 6px;
   background-color: #00000040;
   backdrop-filter: blur(10px);
-  transform: scale(1);
-  transition: transform 0.35s var(--ease-out);
-  @media (hover: hover) {
-    &:hover:not(:active, .card-action) {
-      transform: scale(1.01);
-    }
-  }
-  &:active:not(.card-action) {
-    transform: scale(0.98);
-  }
   &:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 3px;
   }
 }
 
-// Keep press feedback independent of the entrance animation's transform.
 .cards.card-action {
-  scale: 1;
-  transition: scale var(--card-scale-duration, 0.35s) var(--ease-out);
+  transition: background-color 0.16s ease;
   @media (hover: hover) {
-    &:hover:not(:active, [data-pressed]) {
-      scale: 1.02;
+    &:hover {
+      background-color: #00000060;
     }
   }
   &:is(:active, [data-pressed]) {
-    scale: 0.98;
-    --card-scale-duration: 0.08s;
+    background-color: #ffffff30;
   }
 }
 

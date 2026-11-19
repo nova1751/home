@@ -117,7 +117,9 @@ const descriptionText = computed(() =>
     padding: 1rem;
     margin-top: 3.5rem;
     max-width: 460px;
-    animation: rise 0.7s var(--ease-out) 0.06s backwards;
+    .content {
+      animation: fade 0.28s ease-out;
+    }
 
     .content {
       display: flex;

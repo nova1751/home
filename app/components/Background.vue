@@ -40,87 +40,91 @@ let defaultBg = "";
 let loadTimer: ReturnType<typeof setTimeout> | undefined;
 let welcomed = false;
 let requestId = 0;
-let animeRequest: AbortController | undefined;
+let wallpaperRequest: AbortController | undefined;
 
 const releaseBg = (url: string | null) => {
   if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
 };
 
-const fetchAnime = async (controller: AbortController) => {
-  const type = window.matchMedia("(orientation: portrait)").matches ? "mb" : "pc";
-  const timeout = setTimeout(() => controller.abort(), 30000);
-  try {
-    const response = await fetch(
-      `https://rimg.zhuqiy.top/api/random?type=${type}&t=${Date.now()}`,
-      {
-        signal: controller.signal,
-        cache: "no-store",
-        credentials: "omit",
-      },
-    );
-    if (!response.ok) throw new Error("Wallpaper request failed");
-    return URL.createObjectURL(await response.blob());
-  } finally {
-    clearTimeout(timeout);
+const selectBg = async (type: string, signal: AbortSignal) => {
+  if (type === "1") {
+    const day = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Shanghai" });
+    return `https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN&day=${day}`;
   }
+  if (type === "2") {
+    const response = await fetch(
+      `https://v2.xxapi.cn/api/random4kPic?type=wallpaper&return=json&t=${Date.now()}`,
+      { signal, credentials: "omit" },
+    );
+    if (!response.ok) throw new Error("Scenery API unavailable");
+    const { data } = await response.json();
+    if (typeof data !== "string" || new URL(data).protocol !== "https:")
+      throw new Error("Invalid scenery URL");
+    return data;
+  }
+  if (type === "3") {
+    const size = window.matchMedia("(orientation: portrait)").matches ? "mb" : "pc";
+    const response = await fetch(
+      `https://rimg.zhuqiy.top/api/random?type=${size}&t=${Date.now()}`,
+      { signal, credentials: "omit", cache: "no-store" },
+    );
+    if (!response.ok) throw new Error("Anime API unavailable");
+    return URL.createObjectURL(await response.blob());
+  }
+  return defaultBg;
 };
 
-const wallpaperUrl = (index: number) => `/images/background${index}.webp`;
-
-const scenery = Array.from({ length: BG_COUNT }, (_, index) => index + 1).filter(
-  (index) => index !== 11 && index !== 12,
-);
-
-const selectBg = (type: string) => {
-  if (type === "1") return wallpaperUrl((Math.floor(Date.now() / 86_400_000) % BG_COUNT) + 1);
-  const collection = type === "2" ? scenery : [];
-  const alternatives = collection.filter((index) => wallpaperUrl(index) !== bgUrl.value);
-  const choices = alternatives.length ? alternatives : collection;
-  return choices.length
-    ? wallpaperUrl(choices[Math.floor(Math.random() * choices.length)])
-    : defaultBg;
-};
-
-const decodeBg = async (url: string) => {
+const decodeBg = async (url: string, signal: AbortSignal) => {
+  signal.throwIfAborted();
   const image = new Image();
-  image.src = url;
-  await image.decode();
+  const cancel = () => image.removeAttribute("src");
+  signal.addEventListener("abort", cancel, { once: true });
+  try {
+    image.src = url;
+    await image.decode();
+    signal.throwIfAborted();
+  } finally {
+    signal.removeEventListener("abort", cancel);
+  }
 };
 
 // Keep the current image visible until the next one is ready.
 const changeBg = async (type: string) => {
   const id = ++requestId;
-  animeRequest?.abort();
+  wallpaperRequest?.abort();
+  const controller = new AbortController();
+  wallpaperRequest = controller;
+  store.wallpaperStatus = "loading";
+  const timeout = setTimeout(() => controller.abort(), 30000);
   let url = "";
   try {
-    if (type === "3") {
-      animeRequest = new AbortController();
-      url = await fetchAnime(animeRequest);
-    } else {
-      url = selectBg(type);
-    }
-    await decodeBg(url);
+    url = await selectBg(type, controller.signal);
+    await decodeBg(url, controller.signal);
     if (id !== requestId) {
       releaseBg(url);
       return;
     }
     const previous = bgUrl.value;
     bgUrl.value = url;
+    store.wallpaperStatus = "ready";
     nextTick(() => releaseBg(previous));
     store.setImgLoadStatus(true);
   } catch {
     releaseBg(url);
     if (id !== requestId) return;
     if (!bgUrl.value && url !== defaultBg) {
-      await changeBg("0");
-      return;
+      bgUrl.value = defaultBg;
     }
     store.setImgLoadStatus(true);
+    store.wallpaperStatus = "error";
     welcome();
-    ElMessage({
-      message: "壁纸加载失败",
-      icon: h(ErrorIcon, { theme: "filled", fill: "#efefef" }),
-    });
+    if (!store.setOpenState)
+      ElMessage({
+        message: "壁纸加载失败",
+        icon: h(ErrorIcon, { theme: "filled", fill: "#efefef" }),
+      });
+  } finally {
+    clearTimeout(timeout);
   }
 };
 
@@ -155,7 +159,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   requestId++;
-  animeRequest?.abort();
+  wallpaperRequest?.abort();
   releaseBg(bgUrl.value);
   clearTimeout(loadTimer);
 });
@@ -182,7 +186,7 @@ onBeforeUnmount(() => {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    // 从模糊占位图融入清晰壁纸，同时轻微回位；不逐帧计算模糊
+    // 从模糊占位图融入清晰壁纸；不逐帧计算模糊
     animation: wallpaper-in 1s var(--ease-out) both;
   }
   // 模糊占位图：缩略图由 <head> 内联脚本写入 --bg-thumb，首帧即可显示，壁纸淡入后移除
@@ -252,7 +256,6 @@ onBeforeUnmount(() => {
 @keyframes wallpaper-in {
   from {
     opacity: 0;
-    transform: scale(1.04);
   }
 }
 </style>

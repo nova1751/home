@@ -40,7 +40,9 @@ const props = defineProps<{ playerConfigured: boolean }>();
 const store = useMainStore();
 const mobileMusic = computed(() => props.playerConfigured && store.mobileFuncState);
 const musicEntryAvailable = computed(
-  () => props.playerConfigured && (mobileMusic.value || store.musicIsOk || store.musicLoadFailed || store.musicRetrying),
+  () =>
+    props.playerConfigured &&
+    (mobileMusic.value || store.musicIsOk || store.musicLoadFailed || store.musicRetrying),
 );
 
 // 开启音乐面板按钮显隐
@@ -97,7 +99,9 @@ onBeforeUnmount(() => updateHitokoto.cancel());
   width: 100%;
   height: 100%;
   padding: 20px;
-  animation: rise 0.7s var(--ease-out) 0.12s backwards;
+  > * {
+    animation: fade 0.3s ease-out;
+  }
   &.mobile-music {
     padding-top: 38px;
     .open-music {

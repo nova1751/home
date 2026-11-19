@@ -59,9 +59,8 @@
     </div>
   </div>
   <!-- 音乐列表弹窗 -->
-  <Transition name="fade" mode="out-in">
-    <div v-show="store.musicListShow" class="music-list" @click="store.musicListShow = false">
-      <Transition name="zoom">
+  <div v-show="store.musicListShow" class="music-list" @click="store.musicListShow = false">
+      <Transition name="fade">
         <div v-show="store.musicListShow" class="list" @click.stop>
           <button
             class="close"
@@ -84,8 +83,7 @@
           </ClientOnly>
         </div>
       </Transition>
-    </div>
-  </Transition>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -194,7 +192,7 @@ watch(volumeNum, (value) => {
   justify-content: space-between;
   align-items: center;
   flex-direction: column;
-  animation: fade 0.5s;
+  > .btns { animation: fade 0.3s ease-out; }
   .btns {
     display: flex;
     align-items: center;
@@ -397,21 +395,4 @@ watch(volumeNum, (value) => {
   }
 }
 
-// 弹窗动画
-.zoom-enter-active {
-  animation: zoom 0.35s var(--ease-out);
-}
-.zoom-leave-active {
-  animation: zoom 0.2s ease-in reverse;
-}
-@keyframes zoom {
-  0% {
-    opacity: 0;
-    transform: scale(0.94) translateY(12px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
 </style>
