@@ -24,6 +24,12 @@ export interface CurrentWeather {
 const fallback: Location = { city: "杭州市", location: "120.155070,30.274085" };
 const timeout = 4000;
 
+function chineseName(...names: unknown[]) {
+  return names
+    .map((name) => (typeof name === "string" ? name.trim() : ""))
+    .find((name) => /\p{Script=Han}/u.test(name) && !/[^\p{Script=Han}\p{N}\p{P}\s]/u.test(name)) ?? "";
+}
+
 function coordinates(longitude: unknown, latitude: unknown) {
   if (
     typeof longitude !== "number" ||
@@ -51,36 +57,48 @@ async function locateWithAmap(key: string): Promise<Location> {
   if (!corners) throw new Error("高德未返回有效定位范围");
   const [west, south, east, north] = corners.slice(1).map(Number);
   return {
-    city: typeof result.city === "string" ? result.city : "",
+    city: chineseName(result.city) || "中国",
     location: coordinates((west + east) / 2, (south + north) / 2),
     adcode: typeof result.adcode === "string" ? result.adcode : undefined,
   };
 }
 
-function ipCity(result: { country?: string; region?: string; city?: string }) {
-  return [result.country, result.region || result.city].filter(Boolean).join("·");
+interface IpPlace {
+  country?: string;
+  country_code?: string;
+  region?: string;
+  city?: string;
+}
+
+function ipCity(result: IpPlace) {
+  const code = typeof result.country_code === "string" ? result.country_code.toUpperCase() : "";
+  const country =
+    chineseName(result.country) ||
+    (code && /^[A-Z]{2}$/.test(code) && typeof Intl.DisplayNames === "function"
+      ? chineseName(new Intl.DisplayNames("zh-CN", { type: "region", fallback: "none" }).of(code))
+      : "");
+  const region = chineseName(result.city, result.region);
+  return placeLabel(country, region);
+}
+
+function placeLabel(country: string, city: string) {
+  if (country === "中国") return city || country;
+  return [country, city === country ? "" : city].filter(Boolean).join("·");
 }
 
 async function locateWithIpWho(): Promise<Location> {
-  const result = await fetchJSON<{
-    success?: boolean;
-    longitude?: number;
-    latitude?: number;
-    country?: string;
-    region?: string;
-    city?: string;
-  }>("https://ipwho.is/?fields=success,latitude,longitude,country,region,city&lang=zh", timeout);
+  const result = await fetchJSON<IpPlace & { success?: boolean; longitude?: number; latitude?: number }>(
+    "https://ipwho.is/?fields=success,latitude,longitude,country,country_code,region,city&lang=zh",
+    timeout,
+  );
   if (!result.success) throw new Error("ipwho 未返回定位坐标");
   return { city: ipCity(result), location: coordinates(result.longitude, result.latitude) };
 }
 
 async function locateWithIpSb(): Promise<Location> {
-  const result = await fetchJSON<{
+  const result = await fetchJSON<IpPlace & {
     longitude?: number;
     latitude?: number;
-    country?: string;
-    region?: string;
-    city?: string;
   }>("https://api.ip.sb/geoip", timeout);
   return { city: ipCity(result), location: coordinates(result.longitude, result.latitude) };
 }
@@ -114,7 +132,7 @@ function weatherUrl(host: string, path: string, key: string, location: string) {
 async function resolveLocation(config: WeatherConfig): Promise<Location> {
   const cacheKey = "home-weather-location";
   const cached = readCache<Location>(cacheKey);
-  if (cached?.location) return cached;
+  if (cached?.location && chineseName(cached.city)) return cached;
 
   let place = fallback;
   for (const lookup of [() => locateWithAmap(config.weatherKey), locateWithIpWho, locateWithIpSb]) {
@@ -139,17 +157,21 @@ async function resolveLocation(config: WeatherConfig): Promise<Location> {
       );
       const city = result.location?.[0];
       if (result.code === "200" && city) {
-        place.city =
-          city.country === "中国"
-            ? city.adm2 || city.name
-            : `${city.country}·${city.adm1 || city.name}`;
+        const country = chineseName(city.country);
+        const district =
+          country === "中国"
+            ? chineseName(city.adm2, city.name, city.adm1)
+            : chineseName(city.adm1, city.name, city.adm2);
+        const label = placeLabel(country, district);
+        if (label) place.city = label;
       }
     } catch {
       // 城市名称获取失败时仍可使用坐标查询天气。
     }
   }
 
-  if (place.city) writeCache(cacheKey, place, 360);
+  place.city ||= "未知地区";
+  writeCache(cacheKey, place, 360);
   return place;
 }
 
