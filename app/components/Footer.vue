@@ -18,6 +18,19 @@
             {{ config.author }}
           </a>
         </span>
+        <span class="weather-sources">
+          &amp; <a href="https://www.qweather.com/" target="_blank" rel="noopener">和风天气</a>
+          <template v-if="weatherSource === 'open-meteo'">
+            ·
+            <a
+              href="https://open-meteo.com/en/license"
+              target="_blank"
+              rel="noopener"
+              title="CC BY 4.0，已转换天气描述和风力等级"
+              >Open-Meteo</a
+            >
+          </template>
+        </span>
         <!-- 站点备案 -->
         <a v-if="siteIcp" href="https://beian.miit.gov.cn" target="_blank">
           &amp;
@@ -43,6 +56,7 @@ import { MusicOne } from "@icon-park/vue-next";
 const store = useMainStore();
 const { config, siteLink } = useSite();
 const fullYear = new Date().getFullYear();
+const weatherSource = useState<string | undefined>("weather-source", () => undefined);
 
 // 加载配置数据
 const siteStartDate = config.siteStart;
@@ -66,6 +80,10 @@ onMounted(() => (mounted.value = true));
   text-align: center;
   z-index: 0;
   font-size: 14px;
+  .weather-sources {
+    font-size: 0.75em;
+    opacity: 0.75;
+  }
   .power {
     animation: fade 0.7s ease-out 0.3s backwards;
   }

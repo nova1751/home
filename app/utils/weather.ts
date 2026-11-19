@@ -8,9 +8,6 @@ interface Location {
 
 interface WeatherConfig {
   weatherKey: string;
-  qweatherKey: string;
-  qweatherHost: string;
-  qweatherGeoHost: string;
 }
 
 export interface CurrentWeather {
@@ -25,9 +22,13 @@ const fallback: Location = { city: "杭州市", location: "120.155070,30.274085"
 const timeout = 4000;
 
 function chineseName(...names: unknown[]) {
-  return names
-    .map((name) => (typeof name === "string" ? name.trim() : ""))
-    .find((name) => /\p{Script=Han}/u.test(name) && !/[^\p{Script=Han}\p{N}\p{P}\s]/u.test(name)) ?? "";
+  return (
+    names
+      .map((name) => (typeof name === "string" ? name.trim() : ""))
+      .find(
+        (name) => /\p{Script=Han}/u.test(name) && !/[^\p{Script=Han}\p{N}\p{P}\s]/u.test(name),
+      ) ?? ""
+  );
 }
 
 function coordinates(longitude: unknown, latitude: unknown) {
@@ -87,7 +88,9 @@ function placeLabel(country: string, city: string) {
 }
 
 async function locateWithIpWho(): Promise<Location> {
-  const result = await fetchJSON<IpPlace & { success?: boolean; longitude?: number; latitude?: number }>(
+  const result = await fetchJSON<
+    IpPlace & { success?: boolean; longitude?: number; latitude?: number }
+  >(
     "https://ipwho.is/?fields=success,latitude,longitude,country,country_code,region,city&lang=zh",
     timeout,
   );
@@ -96,10 +99,12 @@ async function locateWithIpWho(): Promise<Location> {
 }
 
 async function locateWithIpSb(): Promise<Location> {
-  const result = await fetchJSON<IpPlace & {
-    longitude?: number;
-    latitude?: number;
-  }>("https://api.ip.sb/geoip", timeout);
+  const result = await fetchJSON<
+    IpPlace & {
+      longitude?: number;
+      latitude?: number;
+    }
+  >("https://api.ip.sb/geoip", timeout);
   return { city: ipCity(result), location: coordinates(result.longitude, result.latitude) };
 }
 
@@ -123,14 +128,8 @@ function writeCache<T>(key: string, value: T, minutes: number) {
   }
 }
 
-function weatherUrl(host: string, path: string, key: string, location: string) {
-  const url = new URL(path, `https://${host}`);
-  url.search = new URLSearchParams({ location, key, lang: "zh" }).toString();
-  return url.href;
-}
-
 async function resolveLocation(config: WeatherConfig): Promise<Location> {
-  const cacheKey = "home-weather-location";
+  const cacheKey = "home-weather-location-v2";
   const cached = readCache<Location>(cacheKey);
   if (cached?.location && chineseName(cached.city)) return cached;
 
@@ -145,28 +144,17 @@ async function resolveLocation(config: WeatherConfig): Promise<Location> {
   }
   if (place === fallback) return fallback;
 
-  if (config.qweatherKey && config.qweatherGeoHost && !place.adcode) {
+  if (!place.adcode) {
     try {
-      const result = await fetchJSON<{
-        code: string;
-        location?: { country: string; adm1: string; adm2: string; name: string }[];
-      }>(
-        weatherUrl(config.qweatherGeoHost, "/v2/city/lookup", config.qweatherKey, place.location) +
-          "&number=1",
+      const [lon, lat] = place.location.split(",");
+      const result = await fetchJSON<{ city: string; country: string }>(
+        "/api/weather/location?" + new URLSearchParams({ lat, lon }).toString(),
         timeout,
       );
-      const city = result.location?.[0];
-      if (result.code === "200" && city) {
-        const country = chineseName(city.country);
-        const district =
-          country === "中国"
-            ? chineseName(city.adm2, city.name, city.adm1)
-            : chineseName(city.adm1, city.name, city.adm2);
-        const label = placeLabel(country, district);
-        if (label) place.city = label;
-      }
+      const label = placeLabel(chineseName(result.country), chineseName(result.city));
+      if (label) place.city = label;
     } catch {
-      // 城市名称获取失败时仍可使用坐标查询天气。
+      // 保留 IP 定位返回的中文国家名，天气仍使用同一坐标。
     }
   }
 
@@ -240,17 +228,6 @@ async function getOpenMeteoWeather(location: string): Promise<CurrentWeather> {
 }
 
 async function loadCurrentWeather(config: WeatherConfig, place: Location): Promise<CurrentWeather> {
-  if (config.qweatherKey && config.qweatherHost) {
-    try {
-      const result = await fetchJSON<{ code: string; now?: CurrentWeather }>(
-        weatherUrl(config.qweatherHost, "/v7/weather/now", config.qweatherKey, place.location),
-        timeout,
-      );
-      if (result.code === "200" && result.now?.text) return result.now;
-    } catch {
-      // 和风天气失败后尝试高德。
-    }
-  }
   const adcode = place.adcode || (place === fallback ? "330100" : "");
   if (config.weatherKey && adcode) {
     try {
@@ -282,7 +259,7 @@ async function loadCurrentWeather(config: WeatherConfig, place: Location): Promi
 
 export async function getLocalWeather(config: WeatherConfig) {
   const place = await resolveLocation(config);
-  const cacheKey = "home-weather-current";
+  const cacheKey = "home-weather-current-v2";
   const cached = readCache<{ location: string; now: CurrentWeather }>(cacheKey);
   if (cached?.location === place.location && cached.now?.text) {
     return { city: place.city || "未知地区", now: cached.now };
