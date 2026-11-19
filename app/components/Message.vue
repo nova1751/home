@@ -84,7 +84,12 @@ const changeBox = () => {
         var(--title-max),
         calc((100cqi - var(--avatar-size) - var(--logo-gap)) / 3.9)
       );
-      transform: translateY(-8px);
+      --descender-space: calc(var(--title-size) * 0.25);
+      line-height: 1.35;
+      padding-bottom: var(--descender-space);
+      margin-bottom: calc(-1 * var(--descender-space));
+      // Pacifico 字形的视觉中心偏低，按字号调整以对齐头像中心。
+      transform: translateY(calc(var(--title-size) * -0.115));
       font-family: "Pacifico-Regular";
 
       .bg {
@@ -99,9 +104,6 @@ const changeBox = () => {
     @media (max-width: 768px) {
       --avatar-size: 100px;
       --title-max: 4.5rem;
-      .name {
-        height: 128px;
-      }
     }
 
     @media (max-width: 720px) {
@@ -110,14 +112,6 @@ const changeBox = () => {
       --title-max: clamp(2rem, 12dvh, 4.5rem);
       justify-content: center;
       max-width: 100%;
-      .name {
-        --descender-space: calc(var(--title-size) * 0.25);
-        height: auto;
-        line-height: 1.35;
-        padding-bottom: var(--descender-space);
-        margin-bottom: calc(-1 * var(--descender-space));
-        transform: none;
-      }
     }
   }
 
