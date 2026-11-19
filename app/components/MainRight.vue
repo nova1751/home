@@ -28,7 +28,7 @@ const { domainName, domainSuffix } = useSite();
     display: none;
     width: 100%;
     font-family: "Pacifico-Regular";
-    font-size: clamp(2.8rem, 11vw, 4rem);
+    font-size: clamp(3rem, 16.5vw, 5rem);
     line-height: 1.4;
     padding-bottom: 0.2em;
     margin-bottom: clamp(0.5rem, 2dvh, 1rem);
