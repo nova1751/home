@@ -45,7 +45,6 @@ export default defineNuxtConfig({
       descText: env.VITE_DESC_TEXT || "",
       descHelloOther: env.VITE_DESC_HELLO_OTHER || "",
       descTextOther: env.VITE_DESC_TEXT_OTHER || "",
-      weatherKey: env.VITE_WEATHER_KEY || "",
       siteStart: env.VITE_SITE_START || "",
       siteIcp: env.VITE_SITE_ICP || "",
       songApi: env.VITE_SONG_API || "",

@@ -12,11 +12,9 @@
 <script setup lang="ts">
 import type { CurrentWeather } from "~/utils/weather";
 
-const config = useRuntimeConfig().public;
 const weatherCard = ref<HTMLDivElement | null>(null);
 const loading = ref(true);
 const weather = ref<(CurrentWeather & { city: string }) | null>(null);
-const weatherSource = useState<string | undefined>("weather-source", () => undefined);
 const wind = computed(() => {
   if (!weather.value) return "";
   const { windDir, windScale } = weather.value;
@@ -28,9 +26,8 @@ let observer: IntersectionObserver | undefined;
 async function loadWeather() {
   try {
     const { getLocalWeather } = await import("~/utils/weather");
-    const { city, now } = await getLocalWeather(config);
+    const { city, now } = await getLocalWeather();
     weather.value = { city, ...now };
-    weatherSource.value = now.source;
   } catch {
     // 天气卡片内显示请求结果。
   } finally {
