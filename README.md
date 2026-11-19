@@ -210,7 +210,7 @@ make clean all
 
 ### API
 
-* [小歪 API](https://api.aixiaowai.cn)
+* [ZHUQIY 随机动漫壁纸 API](https://r.zhuqiy.com/)
 * [搏天 API](https://api.btstu.cn/doc/sjbz.php)
 * [教书先生 API](https://api.oioweb.cn/doc/weather/GetWeather)
 * [高德开放平台](https://lbs.amap.com/)

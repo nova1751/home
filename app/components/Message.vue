@@ -13,10 +13,10 @@
     <button
       class="description cards card-action"
       type="button"
-      :aria-label="canOpenBox ? '切换功能面板' : '打开设置'"
-      :aria-haspopup="canOpenBox ? undefined : 'dialog'"
+      aria-label="切换功能面板"
+      :aria-expanded="store.boxOpenState"
       aria-describedby="site-description"
-      @click="changeBox"
+      @click="store.boxOpenState = !store.boxOpenState"
     >
       <span class="content">
         <Icon size="16" aria-hidden="true">
@@ -42,7 +42,6 @@ const { config, domainName, domainSuffix } = useSite();
 
 // 主页站点logo
 const siteLogo = config.siteMainLogo;
-const canOpenBox = computed(() => (store.getInnerWidth ?? 0) >= 990);
 
 // 简介区域文字
 const descriptionText = computed(() =>
@@ -50,15 +49,6 @@ const descriptionText = computed(() =>
     ? { hello: config.descHelloOther, text: config.descTextOther }
     : { hello: config.descHello, text: config.descText },
 );
-
-// 切换右侧功能区
-const changeBox = () => {
-  if (canOpenBox.value) {
-    store.boxOpenState = !store.boxOpenState;
-  } else {
-    store.setOpenState = true;
-  }
-};
 </script>
 
 <style lang="scss" scoped>

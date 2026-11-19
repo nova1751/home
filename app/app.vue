@@ -12,7 +12,7 @@
       aria-controls="site-panel"
       :aria-expanded="store.mobileOpenState"
       :aria-label="store.mobileOpenState ? '关闭站点菜单' : '打开站点菜单'"
-      @click="store.mobileOpenState = !store.mobileOpenState"
+      @click="toggleMobileMenu"
     >
       <Icon size="24" aria-hidden="true">
         <component :is="store.mobileOpenState ? CloseSmall : HamburgerButton" />
@@ -20,9 +20,23 @@
     </button>
     <div v-show="!store.backgroundShow" ref="content" class="container">
       <section class="all">
-        <MainLeft />
-        <MainRight v-show="!store.boxOpenState" />
-        <LazyBox v-if="boxLoaded" v-show="store.boxOpenState" />
+        <Transition name="panel">
+          <MainLeft v-show="!showBox || !compact" class="intro" />
+        </Transition>
+        <Transition name="panel">
+          <MainRight v-show="!showBox" class="sites" />
+        </Transition>
+        <Transition name="panel" @after-enter="focusBox">
+          <section
+            v-if="showBox"
+            ref="boxPanel"
+            class="box-panel"
+            aria-label="时光胶囊"
+            @keydown.esc.stop="closeBox"
+          >
+            <BoxComponent @close="closeBox" />
+          </section>
+        </Transition>
       </section>
     </div>
     <!-- 页脚 -->
@@ -67,14 +81,31 @@ watch(
 );
 
 // 盒子 / 设置页首次打开时才加载
-const boxLoaded = ref(false);
+const BoxComponent = shallowRef<typeof import("~/components/Box.vue").default>();
+const showBox = computed(() => store.boxOpenState && !!BoxComponent.value);
+const compact = computed(() => (store.innerWidth ?? 0) <= 720);
+const boxPanel = ref<HTMLElement | null>(null);
+const focusBox = () =>
+  boxPanel.value?.querySelector<HTMLButtonElement>(".setting")?.focus({ preventScroll: true });
+const closeBox = async () => {
+  store.boxOpenState = false;
+  await nextTick();
+  main.value?.querySelector<HTMLButtonElement>(".description")?.focus({ preventScroll: true });
+};
+const toggleMobileMenu = () => {
+  store.boxOpenState = false;
+  store.mobileOpenState = !store.mobileOpenState;
+};
+watch(
+  () => store.boxOpenState,
+  async (open) => {
+    if (open && !BoxComponent.value)
+      BoxComponent.value = (await import("~/components/Box.vue")).default;
+  },
+);
 const setLoaded = ref(false);
 const setReady = ref(false);
 const settingsDialog = ref<HTMLDialogElement | null>(null);
-watch(
-  () => store.boxOpenState,
-  (value) => value && (boxLoaded.value = true),
-);
 watch(
   [() => store.setOpenState, setReady],
   ([open, ready]) => {
@@ -125,10 +156,43 @@ onBeforeUnmount(() => {
       width: 100%;
       height: 100%;
       padding: 0 0.75rem;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 1.25rem;
       align-items: center;
+      .intro,
+      .sites,
+      .box-panel {
+        grid-row: 1;
+        width: 100%;
+        margin-inline: 0;
+      }
+      .intro {
+        grid-column: 1;
+      }
+      .sites,
+      .box-panel {
+        grid-column: 2;
+      }
+      .box-panel {
+        max-height: 80dvh;
+        overflow: auto;
+        border-radius: 6px;
+      }
+      .panel-enter-active,
+      .panel-leave-active {
+        transition:
+          opacity 0.22s ease,
+          translate 0.22s var(--ease-out);
+      }
+      .panel-leave-active {
+        pointer-events: none;
+      }
+      .panel-enter-from,
+      .panel-leave-to {
+        opacity: 0;
+        translate: 0 6px;
+      }
     }
     @media (max-width: 1200px) {
       padding: 0 2vw;
@@ -137,25 +201,47 @@ onBeforeUnmount(() => {
   .settings-dialog {
     margin: auto;
     width: min(80vw, 72rem);
-    height: 80dvh;
+    height: fit-content;
     max-width: none;
     max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     overflow: auto;
     overscroll-behavior: contain;
-    border: 1px solid rgb(255 255 255 / 18%);
+    border: 0;
     border-radius: 8px;
-    background: #303039;
+    background: rgb(255 255 255 / 40%);
     color: #fff;
+    opacity: 0;
+    translate: 0 8px;
+    transition:
+      opacity 0.22s ease,
+      translate 0.22s var(--ease-out),
+      display 0.22s allow-discrete,
+      overlay 0.22s allow-discrete;
     &[open] {
-      animation: settings-enter 0.24s var(--ease-out) both;
+      opacity: 1;
+      translate: 0;
+      @starting-style {
+        opacity: 0;
+        translate: 0 8px;
+      }
     }
     &::backdrop {
-      background: rgb(0 0 0 / 55%);
-      animation: fade 0.2s ease-out both;
+      background: rgb(0 0 0 / 50%);
+      backdrop-filter: blur(20px);
+      opacity: 0;
+      transition:
+        opacity 0.22s ease,
+        display 0.22s allow-discrete,
+        overlay 0.22s allow-discrete;
+    }
+    &[open]::backdrop {
+      opacity: 1;
+      @starting-style {
+        opacity: 0;
+      }
     }
     @media (max-width: 720px) {
       width: calc(100% - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right));
-      height: auto;
     }
   }
   .menu {
@@ -195,7 +281,16 @@ onBeforeUnmount(() => {
       .all {
         height: auto;
         min-height: 100%;
-        flex-direction: column;
+        grid-template-columns: minmax(0, 1fr);
+        .intro,
+        .sites,
+        .box-panel {
+          grid-column: 1;
+        }
+        .box-panel {
+          max-height: none;
+          overflow: visible;
+        }
         padding: clamp(0.75rem, 3dvh, 2rem) 0.75rem;
         padding-top: max(clamp(0.75rem, 3dvh, 2rem), env(safe-area-inset-top));
         padding-left: max(0.75rem, env(safe-area-inset-left));
@@ -219,6 +314,9 @@ onBeforeUnmount(() => {
   @media (max-width: 720px) and (scripting: none) {
     .container .all {
       gap: 1rem;
+      .sites {
+        grid-row: 2;
+      }
     }
     .menu {
       display: none;
@@ -236,26 +334,9 @@ onBeforeUnmount(() => {
         padding-block: 1rem;
       }
     }
-    :deep(.box) {
-      height: 80dvh;
-    }
     :deep(#footer) {
       position: static;
     }
-  }
-}
-
-@keyframes settings-enter {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.985);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #main .settings-dialog[open],
-  #main .settings-dialog::backdrop {
-    animation: none;
   }
 }
 </style>

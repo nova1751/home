@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { Error } from "@icon-park/vue-next";
+import { Error as ErrorIcon } from "@icon-park/vue-next";
 
 const store = useMainStore();
 const bgUrl = ref<string | null>(null);
@@ -40,16 +40,40 @@ let defaultBg = "";
 let loadTimer: ReturnType<typeof setTimeout> | undefined;
 let welcomed = false;
 let requestId = 0;
+let animeRequest: AbortController | undefined;
+
+const releaseBg = (url: string | null) => {
+  if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+};
+
+const fetchAnime = async (controller: AbortController) => {
+  const type = window.matchMedia("(orientation: portrait)").matches ? "mb" : "pc";
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch(
+      `https://rimg.zhuqiy.top/api/random?type=${type}&t=${Date.now()}`,
+      {
+        signal: controller.signal,
+        cache: "no-store",
+        credentials: "omit",
+      },
+    );
+    if (!response.ok) throw new Error("Wallpaper request failed");
+    return URL.createObjectURL(await response.blob());
+  } finally {
+    clearTimeout(timeout);
+  }
+};
 
 const wallpaperUrl = (index: number) => `/images/background${index}.webp`;
-const anime = [11, 12].filter((index) => index <= BG_COUNT);
+
 const scenery = Array.from({ length: BG_COUNT }, (_, index) => index + 1).filter(
-  (index) => !anime.includes(index),
+  (index) => index !== 11 && index !== 12,
 );
 
 const selectBg = (type: string) => {
   if (type === "1") return wallpaperUrl((Math.floor(Date.now() / 86_400_000) % BG_COUNT) + 1);
-  const collection = type === "2" ? scenery : type === "3" ? anime : [];
+  const collection = type === "2" ? scenery : [];
   const alternatives = collection.filter((index) => wallpaperUrl(index) !== bgUrl.value);
   const choices = alternatives.length ? alternatives : collection;
   return choices.length
@@ -66,13 +90,26 @@ const decodeBg = async (url: string) => {
 // Keep the current image visible until the next one is ready.
 const changeBg = async (type: string) => {
   const id = ++requestId;
-  const url = selectBg(type);
+  animeRequest?.abort();
+  let url = "";
   try {
+    if (type === "3") {
+      animeRequest = new AbortController();
+      url = await fetchAnime(animeRequest);
+    } else {
+      url = selectBg(type);
+    }
     await decodeBg(url);
-    if (id !== requestId) return;
+    if (id !== requestId) {
+      releaseBg(url);
+      return;
+    }
+    const previous = bgUrl.value;
     bgUrl.value = url;
+    nextTick(() => releaseBg(previous));
     store.setImgLoadStatus(true);
   } catch {
+    releaseBg(url);
     if (id !== requestId) return;
     if (!bgUrl.value && url !== defaultBg) {
       await changeBg("0");
@@ -82,7 +119,7 @@ const changeBg = async (type: string) => {
     welcome();
     ElMessage({
       message: "壁纸加载失败",
-      icon: h(Error, { theme: "filled", fill: "#efefef" }),
+      icon: h(ErrorIcon, { theme: "filled", fill: "#efefef" }),
     });
   }
 };
@@ -102,7 +139,7 @@ const imgAnimationEnd = () => {
 };
 
 // 监听壁纸切换
-watch(() => store.coverType, changeBg);
+watch([() => store.coverType, () => store.wallpaperRefresh], ([type]) => changeBg(type));
 
 onMounted(() => {
   // 优先使用 <head> 内联脚本已开始预加载的壁纸
@@ -118,6 +155,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   requestId++;
+  animeRequest?.abort();
+  releaseBg(bgUrl.value);
   clearTimeout(loadTimer);
 });
 </script>

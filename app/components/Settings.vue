@@ -9,6 +9,14 @@
             <el-radio value="2" size="large" border>随机风景</el-radio>
             <el-radio value="3" size="large" border>随机动漫</el-radio>
           </el-radio-group>
+          <button
+            v-if="coverType === '3'"
+            type="button"
+            class="refresh-wallpaper"
+            @click="store.wallpaperRefresh++"
+          >
+            换一张动漫壁纸
+          </button>
         </div>
       </el-collapse-item>
       <el-collapse-item title="个性化调整" name="2">
@@ -101,11 +109,21 @@ const {
 
 // 默认选中项
 const activeName = ref("1");
-
 </script>
 
 <style lang="scss" scoped>
 .setting {
+  .refresh-wallpaper {
+    display: block;
+    margin: 12px auto 0;
+    padding: 6px 12px;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
   .collapse {
     border-radius: 8px;
     --el-collapse-content-bg-color: #ffffff10;
@@ -183,15 +201,15 @@ const activeName = ref("1");
         }
         @media (max-width: 720px) {
           padding: 14px;
-          .bg-set .el-radio-group {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px;
-            width: 100%;
-            .el-radio {
-              margin: 0;
-              padding-inline: 8px;
-            }
+        }
+        .bg-set .el-radio-group {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+          width: 100%;
+          .el-radio {
+            margin: 0;
+            padding-inline: 8px;
           }
         }
       }

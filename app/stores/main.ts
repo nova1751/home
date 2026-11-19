@@ -8,6 +8,7 @@ export const useMainStore = defineStore("main", {
     imgLoadStatus: false, // 壁纸加载状态
     innerWidth: null as number | null, // 当前窗口宽度
     coverType: "0", // 壁纸种类
+    wallpaperRefresh: 0,
     siteStartShow: false, // 建站日期显示
     musicClick: false, // 音乐链接是否跳转
     musicIsOk: false, // 音乐是否加载完成
@@ -50,9 +51,6 @@ export const useMainStore = defineStore("main", {
       }
       if (value > 910) {
         this.mobileFuncState = false;
-      }
-      if (value < 990) {
-        this.boxOpenState = false;
       }
     },
     // 更改播放状态（传入 audio.paused）

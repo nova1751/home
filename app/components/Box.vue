@@ -1,6 +1,6 @@
 <template>
-  <div class="box cards">
-    <button type="button" class="close" aria-label="关闭功能面板" @click="store.boxOpenState = false">
+  <div class="box">
+    <button type="button" class="close" aria-label="关闭功能面板" @click="$emit('close')">
       <close-one theme="filled" size="26" fill="#ffffffb0" aria-hidden="true" />
     </button>
     <button
@@ -21,21 +21,16 @@
 <script setup lang="ts">
 import { CloseOne, SettingTwo } from "@icon-park/vue-next";
 
+defineEmits<{ close: [] }>();
 const store = useMainStore();
 </script>
 
 <style lang="scss" scoped>
 .box {
-  flex: 1 0 0%;
-  margin-left: 0.75rem;
-  height: 80%;
-  max-width: 50%;
   position: relative;
-  animation: fade 0.5s;
-
-  &:hover {
-    transform: scale(1);
-  }
+  background: #00000040;
+  backdrop-filter: blur(10px);
+  border-radius: 6px;
 
   .close,
   .setting {

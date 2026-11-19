@@ -81,7 +81,6 @@ const jumpTo = (url: string) => {
 <style lang="scss" scoped>
 .set {
   position: relative;
-  min-height: 100%;
   padding: 40px;
 
   .close {
@@ -123,8 +122,7 @@ const jumpTo = (url: string) => {
         font-family: "Pacifico-Regular";
         padding-left: 22px;
         width: 100%;
-        height: 260px;
-        min-height: 140px;
+        margin-bottom: 1.5rem;
         .bg {
           font-size: 5rem;
         }

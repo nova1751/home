@@ -49,6 +49,9 @@ onBeforeUnmount(() => {
 <style lang="scss" scoped>
 .time-capsule {
   width: 100%;
+  :deep(.el-progress-bar__inner) {
+    animation: fill-progress 0.55s var(--ease-out) 0.08s backwards;
+  }
   .title {
     display: flex;
     flex-direction: row;
@@ -66,6 +69,14 @@ onBeforeUnmount(() => {
     display: block;
     margin: 1rem 0rem 0.5rem 0rem;
     font-size: 0.95rem;
+  }
+}
+@keyframes fill-progress {
+  from {
+    clip-path: inset(0 100% 0 0 round 6px);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 6px);
   }
 }
 </style>
