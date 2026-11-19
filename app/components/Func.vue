@@ -71,15 +71,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-@font-face {
-  font-family: "UnidreamLED Clock";
-  font-display: swap;
-  src: url("/font/UnidreamLED-Clock.woff2") format("woff2");
-  ascent-override: 92.8%;
-  descent-override: 24.4%;
-  line-gap-override: 0%;
-}
-
 .function {
   height: 165px;
   display: flex;
@@ -126,6 +117,11 @@ onBeforeUnmount(() => {
       width: 100%;
       height: 100%;
     }
+    .left {
+      display: grid;
+      grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+      > :deep(.hitokoto), > :deep(.music) { grid-area: 1 / 1; }
+    }
     .right {
       padding: 20px;
       display: flex;
@@ -137,6 +133,7 @@ onBeforeUnmount(() => {
         font-size: 1.1rem;
         text-align: center;
         .date {
+          font-family: var(--numeric-text);
           text-overflow: ellipsis;
           overflow-x: hidden;
           white-space: nowrap;

@@ -1,34 +1,36 @@
 <template>
-  <div
-    v-show="!store.musicOpenState"
-    class="hitokoto cards"
-    :class="{ 'mobile-music': mobileMusic }"
-    @mouseenter="openMusicShow = true"
-    @mouseleave="openMusicShow = false"
-    @click.stop
-  >
-    <!-- 打开音乐面板 -->
-    <Transition name="el-fade-in-linear">
-      <button
-        v-if="musicEntryAvailable"
-        type="button"
-        class="open-music"
-        :class="{ 'open-music-visible': mobileMusic || openMusicShow }"
-        aria-controls="music-controls"
-        @click="store.musicOpenState = true"
-      >
-        <music-menu theme="filled" size="18" fill="#efefef" aria-hidden="true" />
-        <span>打开音乐播放器</span>
-      </button>
-    </Transition>
-    <!-- 一言内容 -->
-    <Transition name="el-fade-in-linear" mode="out-in">
-      <div :key="hitokotoData.text" class="content" @click="updateHitokoto">
-        <span class="text">{{ hitokotoData.text }}</span>
-        <span class="from">-「&nbsp;{{ hitokotoData.from }}&nbsp;」</span>
-      </div>
-    </Transition>
-  </div>
+  <Transition name="widget" appear appear-active-class="quote-appear">
+    <div
+      v-show="!store.musicOpenState"
+      class="hitokoto cards"
+      :class="{ 'mobile-music': mobileMusic }"
+      @mouseenter="openMusicShow = true"
+      @mouseleave="openMusicShow = false"
+      @click.stop
+    >
+      <!-- 打开音乐面板 -->
+      <Transition name="el-fade-in-linear">
+        <button
+          v-if="musicEntryAvailable"
+          type="button"
+          class="open-music"
+          :class="{ 'open-music-visible': mobileMusic || openMusicShow }"
+          aria-controls="music-controls"
+          @click="store.musicOpenState = true"
+        >
+          <music-menu theme="filled" size="18" fill="#efefef" aria-hidden="true" />
+          <span>打开音乐播放器</span>
+        </button>
+      </Transition>
+      <!-- 一言内容 -->
+      <Transition name="el-fade-in-linear" mode="out-in">
+        <div :key="hitokotoData.text" class="content" @click="updateHitokoto">
+          <span class="text">{{ hitokotoData.text }}</span>
+          <span class="from">-「&nbsp;{{ hitokotoData.from }}&nbsp;」</span>
+        </div>
+      </Transition>
+    </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -99,7 +101,7 @@ onBeforeUnmount(() => updateHitokoto.cancel());
   width: 100%;
   height: 100%;
   padding: 20px;
-  animation: rise 0.7s var(--ease-out) 0.12s backwards;
+  &.quote-appear { animation: rise 0.7s var(--ease-out) 0.12s backwards; }
   &.mobile-music {
     padding-top: 38px;
     .open-music {

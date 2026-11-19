@@ -312,6 +312,7 @@ defineExpose({ playToggle, changeVolume, changeSong, toggleList, retryLoad });
           background: #ffffff26 !important;
           border-radius: 6px !important;
         }
+        .aplayer-list-index { font-family: var(--numeric-text); }
         .aplayer-list-index,
         .aplayer-list-author {
           color: #efefef;

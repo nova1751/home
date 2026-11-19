@@ -1,63 +1,65 @@
 <template>
   <!-- 音乐控制面板 -->
-  <div
-    v-show="store.musicOpenState"
-    id="music-controls"
-    class="music"
-    @mouseenter="volumeHovered = true"
-    @mouseleave="volumeHovered = false"
-    @focusin="onMusicFocusIn"
-    @focusout="onMusicFocusOut"
-  >
-    <div class="btns">
-      <button type="button" @click="store.musicListShow = true">音乐列表</button>
-      <button type="button" @click="store.musicOpenState = false">回到一言</button>
-    </div>
-    <div class="control">
-      <button type="button" aria-label="上一首" @click="changeMusicIndex(0)">
-        <go-start theme="filled" size="30" fill="#efefef" aria-hidden="true" />
-      </button>
-      <button type="button" class="state" :aria-label="store.playerState ? '暂停' : '播放'" @click="changePlayState">
-        <play-one v-show="!store.playerState" theme="filled" size="50" fill="#efefef" aria-hidden="true" />
-        <pause v-show="store.playerState" theme="filled" size="50" fill="#efefef" aria-hidden="true" />
-      </button>
-      <button type="button" aria-label="下一首" @click="changeMusicIndex(1)">
-        <go-end theme="filled" size="30" fill="#efefef" aria-hidden="true" />
-      </button>
-    </div>
-    <div class="menu" :class="{ 'retry-menu': store.musicLoadFailed && !store.musicRetrying }">
-      <div
-        v-show="!volumeShow || store.musicLoadFailed || store.musicRetrying"
-        class="name"
-        :class="{ 'retry-status': store.musicLoadFailed && !store.musicRetrying }"
-      >
-        <span role="status" aria-live="polite">{{ playerStatus }}</span>
-        <button
-          v-if="store.musicLoadFailed && !store.musicRetrying"
-          type="button"
-          class="retry"
-          aria-label="重新加载音乐"
-          @click="playerRef?.retryLoad()"
-        >重试</button>
+  <Transition name="widget">
+    <div
+      v-show="store.musicOpenState"
+      id="music-controls"
+      class="music"
+      @mouseenter="volumeHovered = true"
+      @mouseleave="volumeHovered = false"
+      @focusin="onMusicFocusIn"
+      @focusout="onMusicFocusOut"
+    >
+      <div class="btns">
+        <button type="button" @click="store.musicListShow = true">音乐列表</button>
+        <button type="button" @click="store.musicOpenState = false">回到一言</button>
       </div>
-      <div v-show="volumeShow && !store.musicLoadFailed && !store.musicRetrying" class="volume">
-        <div class="icon">
-          <volume-mute v-if="volumeNum == 0" theme="filled" size="24" fill="#efefef" aria-hidden="true" />
-          <volume-small
-            v-else-if="volumeNum > 0 && volumeNum < 0.7"
-            theme="filled"
-            size="24"
-            fill="#efefef"
-            aria-hidden="true"
-          />
-          <volume-notice v-else theme="filled" size="24" fill="#efefef" aria-hidden="true" />
+      <div class="control">
+        <button type="button" aria-label="上一首" @click="changeMusicIndex(0)">
+          <go-start theme="filled" size="30" fill="#efefef" aria-hidden="true" />
+        </button>
+        <button type="button" class="state" :aria-label="store.playerState ? '暂停' : '播放'" @click="changePlayState">
+          <play-one v-show="!store.playerState" theme="filled" size="50" fill="#efefef" aria-hidden="true" />
+          <pause v-show="store.playerState" theme="filled" size="50" fill="#efefef" aria-hidden="true" />
+        </button>
+        <button type="button" aria-label="下一首" @click="changeMusicIndex(1)">
+          <go-end theme="filled" size="30" fill="#efefef" aria-hidden="true" />
+        </button>
+      </div>
+      <div class="menu" :class="{ 'retry-menu': store.musicLoadFailed && !store.musicRetrying }">
+        <div
+          v-show="!volumeShow || store.musicLoadFailed || store.musicRetrying"
+          class="name"
+          :class="{ 'retry-status': store.musicLoadFailed && !store.musicRetrying }"
+        >
+          <span role="status" aria-live="polite">{{ playerStatus }}</span>
+          <button
+            v-if="store.musicLoadFailed && !store.musicRetrying"
+            type="button"
+            class="retry"
+            aria-label="重新加载音乐"
+            @click="playerRef?.retryLoad()"
+          >重试</button>
         </div>
-        <ClientOnly>
-          <el-slider v-model="volumeNum" aria-label="音量" :show-tooltip="false" :min="0" :max="1" :step="0.01" />
-        </ClientOnly>
+        <div v-show="volumeShow && !store.musicLoadFailed && !store.musicRetrying" class="volume">
+          <div class="icon">
+            <volume-mute v-if="volumeNum == 0" theme="filled" size="24" fill="#efefef" aria-hidden="true" />
+            <volume-small
+              v-else-if="volumeNum > 0 && volumeNum < 0.7"
+              theme="filled"
+              size="24"
+              fill="#efefef"
+              aria-hidden="true"
+            />
+            <volume-notice v-else theme="filled" size="24" fill="#efefef" aria-hidden="true" />
+          </div>
+          <ClientOnly>
+            <el-slider v-model="volumeNum" aria-label="音量" :show-tooltip="false" :min="0" :max="1" :step="0.01" />
+          </ClientOnly>
+        </div>
       </div>
     </div>
-  </div>
+  </Transition>
   <!-- 音乐列表弹窗 -->
   <Transition name="playlist-shade">
     <div v-show="store.musicListShow" class="music-list" @click="store.musicListShow = false">
@@ -194,7 +196,7 @@ watch(volumeNum, (value) => {
   justify-content: space-between;
   align-items: center;
   flex-direction: column;
-  animation: fade 0.5s;
+
   .btns {
     display: flex;
     align-items: center;
@@ -398,21 +400,22 @@ watch(volumeNum, (value) => {
 }
 
 .playlist-shade-enter-active, .playlist-shade-leave-active {
-  transition: background-color .35s ease;
+  transition: background-color var(--panel-enter) ease;
 }
+.playlist-shade-leave-active { transition-duration: var(--panel-leave); }
 .playlist-shade-enter-from, .playlist-shade-leave-to { background-color: transparent; }
 
 // 弹窗动画
 .zoom-enter-active {
-  animation: zoom 0.35s var(--ease-out);
+  animation: zoom var(--panel-enter) var(--panel-curve);
 }
 .zoom-leave-active {
-  animation: zoom 0.2s ease-in reverse;
+  animation: zoom var(--panel-leave) ease-in-out reverse;
 }
 @keyframes zoom {
   0% {
     opacity: 0;
-    transform: scale(0.94) translateY(12px);
+    transform: translateY(-32px) scale(0.86);
   }
   100% {
     opacity: 1;

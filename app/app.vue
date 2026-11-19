@@ -187,17 +187,18 @@ onBeforeUnmount(() => {
         border-radius: 6px;
       }
       .panel-enter-active, .panel-leave-active {
-        transition: translate .32s var(--ease-out);
+        transition: translate var(--panel-enter) var(--panel-curve);
       }
       .panel-leave-active {
+        transition-duration: var(--panel-leave);
         pointer-events: none;
         // Fade the outgoing surfaces independently so the parent still samples the wallpaper.
         :deep(.cards), :deep(.box), :deep(.message .logo), :deep(.social), :deep(.line), :deep(.right > .logo) {
           opacity: 0;
-          transition: opacity .18s ease;
+          transition: opacity var(--panel-leave) ease;
         }
       }
-      .panel-enter-from, .panel-leave-to { translate: 0 8px; }
+      .panel-enter-from, .panel-leave-to { translate: 0 16px; }
     }
     @media (max-width: 1200px) {
       padding: 0 2vw;
@@ -215,31 +216,35 @@ onBeforeUnmount(() => {
     border-radius: 8px;
     background: rgb(255 255 255 / 40%);
     color: #fff;
+    --dialog-duration: var(--panel-leave);
     opacity: 0;
-    translate: 0 8px;
+    translate: 0 16px;
     transition:
-      opacity 0.22s ease,
-      translate 0.22s var(--ease-out),
-      display 0.22s allow-discrete,
-      overlay 0.22s allow-discrete;
+      opacity var(--dialog-duration) ease,
+      translate var(--dialog-duration) var(--panel-curve),
+      display var(--dialog-duration) allow-discrete,
+      overlay var(--dialog-duration) allow-discrete;
     &[open] {
+      --dialog-duration: var(--panel-enter);
       opacity: 1;
       translate: 0;
       @starting-style {
         opacity: 0;
-        translate: 0 8px;
+        translate: 0 16px;
       }
     }
     &::backdrop {
+      --dialog-duration: var(--panel-leave);
       background: rgb(0 0 0 / 50%);
       backdrop-filter: blur(20px);
       opacity: 0;
       transition:
-        opacity 0.22s ease,
-        display 0.22s allow-discrete,
-        overlay 0.22s allow-discrete;
+        opacity var(--dialog-duration) ease,
+        display var(--dialog-duration) allow-discrete,
+        overlay var(--dialog-duration) allow-discrete;
     }
     &[open]::backdrop {
+      --dialog-duration: var(--panel-enter);
       opacity: 1;
       @starting-style {
         opacity: 0;

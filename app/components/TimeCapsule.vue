@@ -50,7 +50,7 @@ onBeforeUnmount(() => {
 .time-capsule {
   width: 100%;
   :deep(.el-progress-bar__inner) {
-    animation: fill-progress 0.55s var(--ease-out) 0.08s backwards;
+    animation: fill-progress .9s var(--panel-curve) .16s backwards;
   }
   .title {
     display: flex;
@@ -66,6 +66,7 @@ onBeforeUnmount(() => {
     }
   }
   .text {
+    font-family: var(--numeric-text);
     display: block;
     margin: 1rem 0rem 0.5rem 0rem;
     font-size: 0.95rem;

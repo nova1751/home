@@ -37,9 +37,13 @@ p {
 }
 
 @font-face {
-  font-family: "UnidreamLED";
+  font-family: "UnidreamLED Clock";
   font-display: swap;
-  src: url("/font/UnidreamLED.woff2") format("woff2");
+  unicode-range: U+0030-003A;
+  src: url("/font/UnidreamLED-Clock.woff2") format("woff2");
+  ascent-override: 92.8%;
+  descent-override: 24.4%;
+  line-gap-override: 0%;
 }
 
 // 基础样式
@@ -114,7 +118,7 @@ p {
       background-color: #efefef;
       border-radius: 6px;
       text-align: center;
-      font-family: "UnidreamLED";
+      font-family: "UnidreamLED Clock", monospace;
       span {
         color: #564d59;
         font-size: 0.9rem;
@@ -159,8 +163,24 @@ p {
 
 // 全站统一的入场和悬停缓动：起步快、收尾慢
 :root {
+  --numeric-text: "UnidreamLED Clock", "HarmonyOS_Regular", sans-serif;
+  --panel-enter: 650ms;
+  --panel-leave: 420ms;
+  --panel-curve: cubic-bezier(.35, 0, .25, 1);
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+.widget-enter-active,
+.widget-leave-active {
+  transition: opacity var(--panel-enter) var(--panel-curve),
+    translate var(--panel-enter) var(--panel-curve);
+}
+.widget-leave-active {
+  pointer-events: none;
+  transition-duration: var(--panel-leave);
+}
+.widget-enter-from { opacity: 0; translate: 0 14px; }
+.widget-leave-to { opacity: 0; translate: 0 -8px; }
 
 // keyframes 动画
 @keyframes fade {

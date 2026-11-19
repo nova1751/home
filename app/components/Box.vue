@@ -28,6 +28,7 @@ const store = useMainStore();
 <style lang="scss" scoped>
 .box {
   position: relative;
+  animation: fade var(--panel-enter) var(--panel-curve) backwards;
   background: #00000040;
   backdrop-filter: blur(10px);
   border-radius: 6px;
@@ -61,7 +62,7 @@ const store = useMainStore();
   }
 
   .content {
-    animation: rise .45s var(--ease-out) backwards;
+    animation: rise var(--panel-enter) var(--panel-curve) backwards;
     display: flex;
     flex-direction: column;
     padding: 58px 30px 30px;
