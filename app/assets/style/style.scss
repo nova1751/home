@@ -67,13 +67,16 @@ p {
 }
 
 .cards.card-action {
-  transition: background-color 0.16s ease;
+  transition: translate .32s var(--ease-out), background-color .18s ease;
   @media (hover: hover) {
     &:hover {
+      translate: 0 -2px;
       background-color: #00000060;
     }
   }
   &:is(:active, [data-pressed]) {
+    translate: 0 2px;
+    transition-duration: .08s;
     background-color: #ffffff30;
   }
 }
@@ -180,6 +183,10 @@ p {
   }
 }
 
+@keyframes float-in {
+  from { transform: translateY(14px); }
+}
+
 // 隐藏元素
 @media (min-width: 910px) and (max-width: 1200px) {
   .sm-hidden {
@@ -246,7 +253,11 @@ scrollbar-thumb {
 
 /* 小于720px时 */
 @media (max-width: 720px) {
-  // 隐藏元素
+  @keyframes float-in {
+  from { transform: translateY(14px); }
+}
+
+// 隐藏元素
   .xs-hidden {
     display: none;
   }

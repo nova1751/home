@@ -99,9 +99,7 @@ onBeforeUnmount(() => updateHitokoto.cancel());
   width: 100%;
   height: 100%;
   padding: 20px;
-  > * {
-    animation: fade 0.3s ease-out;
-  }
+  animation: rise 0.7s var(--ease-out) 0.12s backwards;
   &.mobile-music {
     padding-top: 38px;
     .open-music {

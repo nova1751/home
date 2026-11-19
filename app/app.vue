@@ -20,21 +20,29 @@
     </button>
     <div v-show="!store.backgroundShow" ref="content" class="container">
       <section class="all">
-        <MainLeft v-show="!showBox || !compact" class="intro" />
-        <MainRight v-show="!showBox" class="sites" />
-        <section
-          v-if="showBox"
-          ref="boxPanel"
-          class="box-panel"
-          aria-label="时光胶囊"
-          @keydown.esc.stop="closeBox"
-        >
-          <BoxComponent @close="closeBox" />
-        </section>
+        <Transition name="panel">
+          <MainLeft v-show="!showBox || !compact" class="intro" />
+        </Transition>
+        <Transition name="panel">
+          <MainRight v-show="!showBox" class="sites" />
+        </Transition>
+        <Transition name="panel">
+          <section
+            v-if="showBox"
+            ref="boxPanel"
+            class="box-panel"
+            aria-label="时光胶囊"
+            @keydown.esc.stop="closeBox"
+          >
+            <BoxComponent @close="closeBox" />
+          </section>
+        </Transition>
       </section>
     </div>
     <!-- 页脚 -->
-    <Footer v-show="!store.backgroundShow" />
+    <Transition name="fade" mode="out-in">
+      <Footer v-show="!store.backgroundShow" />
+    </Transition>
     <dialog
       ref="settingsDialog"
       class="settings-dialog"
@@ -178,6 +186,18 @@ onBeforeUnmount(() => {
         overflow: auto;
         border-radius: 6px;
       }
+      .panel-enter-active, .panel-leave-active {
+        transition: translate .32s var(--ease-out);
+      }
+      .panel-leave-active {
+        pointer-events: none;
+        // Fade the outgoing surfaces independently so the parent still samples the wallpaper.
+        :deep(.cards), :deep(.box), :deep(.message .logo), :deep(.social), :deep(.line), :deep(.right > .logo) {
+          opacity: 0;
+          transition: opacity .18s ease;
+        }
+      }
+      .panel-enter-from, .panel-leave-to { translate: 0 8px; }
     }
     @media (max-width: 1200px) {
       padding: 0 2vw;
@@ -196,19 +216,34 @@ onBeforeUnmount(() => {
     background: rgb(255 255 255 / 40%);
     color: #fff;
     opacity: 0;
+    translate: 0 8px;
     transition:
       opacity 0.22s ease,
+      translate 0.22s var(--ease-out),
       display 0.22s allow-discrete,
       overlay 0.22s allow-discrete;
     &[open] {
       opacity: 1;
+      translate: 0;
       @starting-style {
         opacity: 0;
+        translate: 0 8px;
       }
     }
     &::backdrop {
       background: rgb(0 0 0 / 50%);
       backdrop-filter: blur(20px);
+      opacity: 0;
+      transition:
+        opacity 0.22s ease,
+        display 0.22s allow-discrete,
+        overlay 0.22s allow-discrete;
+    }
+    &[open]::backdrop {
+      opacity: 1;
+      @starting-style {
+        opacity: 0;
+      }
     }
     @media (max-width: 720px) {
       width: calc(100% - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right));
@@ -224,8 +259,10 @@ onBeforeUnmount(() => {
     background: rgb(0 0 0 / 20%);
     backdrop-filter: blur(10px);
     border-radius: 6px;
-    transition: background-color 0.16s ease;
+    animation: rise .7s var(--ease-out) .24s backwards;
+    transition: translate .25s var(--ease-out), background-color .16s ease;
     &:active {
+      translate: 0 2px;
       background-color: #ffffff30;
     }
     &:focus-visible {

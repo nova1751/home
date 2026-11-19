@@ -117,9 +117,7 @@ const openMusic = (event: MouseEvent, name: string) => {
       flex-direction: row;
       justify-content: center;
       padding: 0 10px;
-      > * {
-        animation: fade 0.3s ease-out calc(var(--i) * 0.025s) backwards;
-      }
+      animation: rise 0.7s var(--ease-out) calc(0.28s + var(--i) * 0.05s) backwards;
 
       .name {
         font-size: 1.1rem;

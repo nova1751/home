@@ -132,9 +132,7 @@ onBeforeUnmount(() => {
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      > * {
-        animation: fade 0.3s ease-out;
-      }
+      animation: rise 0.7s var(--ease-out) 0.18s backwards;
       .time {
         font-size: 1.1rem;
         text-align: center;

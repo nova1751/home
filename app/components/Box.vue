@@ -61,7 +61,7 @@ const store = useMainStore();
   }
 
   .content {
-    animation: fade 0.22s ease-out;
+    animation: rise .45s var(--ease-out) backwards;
     display: flex;
     flex-direction: column;
     padding: 58px 30px 30px;
