@@ -1,29 +1,19 @@
 <template>
-  <div class="box cards" @mouseenter="closeShow = true" @mouseleave="closeShow = false">
-    <transition name="el-fade-in-linear">
-      <close-one
-        v-show="closeShow"
-        class="close"
-        theme="filled"
-        size="28"
-        fill="#ffffff60"
-        @click="store.boxOpenState = false"
-      />
-    </transition>
-    <transition name="el-fade-in-linear">
-      <setting-two
-        v-show="closeShow"
-        class="setting"
-        theme="filled"
-        size="28"
-        fill="#ffffff60"
-        @click="store.setOpenState = true"
-      />
-    </transition>
+  <div class="box cards">
+    <button type="button" class="close" aria-label="关闭功能面板" @click="store.boxOpenState = false">
+      <close-one theme="filled" size="26" fill="#ffffffb0" aria-hidden="true" />
+    </button>
+    <button
+      type="button"
+      class="setting"
+      aria-label="打开设置"
+      aria-haspopup="dialog"
+      @click="store.setOpenState = true"
+    >
+      <setting-two theme="filled" size="26" fill="#ffffffb0" aria-hidden="true" />
+    </button>
     <div class="content">
-      <!-- 可在此处自定义任意内容 -->
       <TimeCapsule />
-      <MoreContent />
     </div>
   </div>
 </template>
@@ -32,7 +22,6 @@
 import { CloseOne, SettingTwo } from "@icon-park/vue-next";
 
 const store = useMainStore();
-const closeShow = ref(false);
 </script>
 
 <style lang="scss" scoped>
@@ -53,8 +42,12 @@ const closeShow = ref(false);
     position: absolute;
     top: 14px;
     right: 14px;
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 0;
     transition:
       transform 0.3s,
       opacity 0.3s;
@@ -69,13 +62,13 @@ const closeShow = ref(false);
   }
 
   .setting {
-    right: 56px;
+    right: 54px;
   }
 
   .content {
     display: flex;
     flex-direction: column;
-    padding: 30px;
+    padding: 58px 30px 30px;
     width: 100%;
     height: 100%;
   }

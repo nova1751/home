@@ -19,24 +19,27 @@
       </Icon>
     </button>
     <div v-show="!store.backgroundShow" ref="content" class="container">
-      <section v-show="!store.setOpenState" class="all">
+      <section class="all">
         <MainLeft />
         <MainRight v-show="!store.boxOpenState" />
         <LazyBox v-if="boxLoaded" v-show="store.boxOpenState" />
       </section>
-      <section
-        v-if="setLoaded"
-        v-show="store.setOpenState"
-        class="more"
-        @click="store.setOpenState = false"
-      >
-        <LazyMoreSet />
-      </section>
     </div>
     <!-- 页脚 -->
     <Transition name="fade" mode="out-in">
-      <Footer v-show="!store.backgroundShow && !store.setOpenState" />
+      <Footer v-show="!store.backgroundShow" />
     </Transition>
+    <dialog
+      ref="settingsDialog"
+      class="settings-dialog"
+      aria-labelledby="settings-title"
+      @cancel.prevent="store.setOpenState = false"
+      @click.self="store.setOpenState = false"
+    >
+      <Suspense v-if="setLoaded" @resolve="setReady = true">
+        <LazyMoreSet />
+      </Suspense>
+    </dialog>
   </main>
 </template>
 
@@ -66,13 +69,22 @@ watch(
 // 盒子 / 设置页首次打开时才加载
 const boxLoaded = ref(false);
 const setLoaded = ref(false);
+const setReady = ref(false);
+const settingsDialog = ref<HTMLDialogElement | null>(null);
 watch(
   () => store.boxOpenState,
   (value) => value && (boxLoaded.value = true),
 );
 watch(
-  () => store.setOpenState,
-  (value) => value && (setLoaded.value = true),
+  [() => store.setOpenState, setReady],
+  ([open, ready]) => {
+    if (open) setLoaded.value = true;
+    const dialog = settingsDialog.value;
+    if (!dialog) return;
+    if (open && ready && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  },
+  { flush: "post" },
 );
 
 // 加载完成事件
@@ -118,19 +130,32 @@ onBeforeUnmount(() => {
       justify-content: center;
       align-items: center;
     }
-    .more {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #00000080;
-      backdrop-filter: blur(20px);
-      z-index: 2;
-      animation: fade 0.5s;
-    }
     @media (max-width: 1200px) {
       padding: 0 2vw;
+    }
+  }
+  .settings-dialog {
+    margin: auto;
+    width: min(80vw, 72rem);
+    height: 80dvh;
+    max-width: none;
+    max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overflow: auto;
+    overscroll-behavior: contain;
+    border: 1px solid rgb(255 255 255 / 18%);
+    border-radius: 8px;
+    background: #303039;
+    color: #fff;
+    &[open] {
+      animation: settings-enter 0.24s var(--ease-out) both;
+    }
+    &::backdrop {
+      background: rgb(0 0 0 / 55%);
+      animation: fade 0.2s ease-out both;
+    }
+    @media (max-width: 720px) {
+      width: calc(100% - 1.5rem - env(safe-area-inset-left) - env(safe-area-inset-right));
+      height: auto;
     }
   }
   .menu {
@@ -217,6 +242,20 @@ onBeforeUnmount(() => {
     :deep(#footer) {
       position: static;
     }
+  }
+}
+
+@keyframes settings-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #main .settings-dialog[open],
+  #main .settings-dialog::backdrop {
+    animation: none;
   }
 }
 </style>

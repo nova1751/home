@@ -10,32 +10,39 @@
       </div>
     </div>
     <!-- 简介 -->
-    <div class="description cards" @click="changeBox">
-      <div class="content">
-        <Icon size="16">
+    <button
+      class="description cards card-action"
+      type="button"
+      :aria-label="canOpenBox ? '切换功能面板' : '打开设置'"
+      :aria-haspopup="canOpenBox ? undefined : 'dialog'"
+      aria-describedby="site-description"
+      @click="changeBox"
+    >
+      <span class="content">
+        <Icon size="16" aria-hidden="true">
           <QuoteLeft />
         </Icon>
-        <div class="text">
-          <p>{{ descriptionText.hello }}</p>
-          <p>{{ descriptionText.text }}</p>
-        </div>
-        <Icon size="16">
+        <span id="site-description" class="text">
+          <span>{{ descriptionText.hello }}</span>
+          <span>{{ descriptionText.text }}</span>
+        </span>
+        <Icon size="16" aria-hidden="true">
           <QuoteRight />
         </Icon>
-      </div>
-    </div>
+      </span>
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { QuoteLeft, QuoteRight } from "@vicons/fa";
-import { Error } from "@icon-park/vue-next";
 
 const store = useMainStore();
 const { config, domainName, domainSuffix } = useSite();
 
 // 主页站点logo
 const siteLogo = config.siteMainLogo;
+const canOpenBox = computed(() => (store.getInnerWidth ?? 0) >= 990);
 
 // 简介区域文字
 const descriptionText = computed(() =>
@@ -46,14 +53,10 @@ const descriptionText = computed(() =>
 
 // 切换右侧功能区
 const changeBox = () => {
-  if ((store.getInnerWidth ?? 0) >= 990) {
+  if (canOpenBox.value) {
     store.boxOpenState = !store.boxOpenState;
   } else {
-    ElMessage({
-      message: "当前页面宽度不足以开启盒子",
-      grouping: true,
-      icon: h(Error, { theme: "filled", fill: "#efefef" }),
-    });
+    store.setOpenState = true;
   }
 };
 </script>
@@ -116,6 +119,11 @@ const changeBox = () => {
   }
 
   .description {
+    display: block;
+    width: 100%;
+    border: 0;
+    text-align: left;
+    font: inherit;
     padding: 1rem;
     margin-top: 3.5rem;
     max-width: 460px;
@@ -130,10 +138,11 @@ const changeBox = () => {
         line-height: 2rem;
         margin-right: auto;
 
-        p {
-          &:nth-of-type(1) {
-            font-family: "Pacifico-Regular";
-          }
+        > span {
+          display: block;
+        }
+        > span:first-child {
+          font-family: "Pacifico-Regular";
         }
       }
 
@@ -144,7 +153,6 @@ const changeBox = () => {
     @media (max-width: 720px) {
       max-width: 100%;
       margin-top: clamp(0.75rem, 4dvh, 2rem);
-      pointer-events: none;
     }
   }
   @media (max-width: 720px) and (max-height: 540px) {

@@ -25,6 +25,24 @@ export default defineNuxtPlugin((nuxtApp) => {
     // 自定义鼠标
     cursorInit();
 
+    let pressedCard: Element | null = null;
+    const releaseCard = () => {
+      pressedCard?.removeAttribute("data-pressed");
+      pressedCard = null;
+    };
+    document.addEventListener("pointerdown", (event) => {
+      if (!event.isPrimary || event.pointerType !== "touch" || !(event.target instanceof Element))
+        return;
+      releaseCard();
+      pressedCard = event.target.closest(".card-action");
+      pressedCard?.setAttribute("data-pressed", "");
+    });
+    const releaseTouchCard = (event: PointerEvent) => {
+      if (event.isPrimary && event.pointerType === "touch") releaseCard();
+    };
+    document.addEventListener("pointerup", releaseTouchCard);
+    document.addEventListener("pointercancel", releaseTouchCard);
+
     // 鼠标中键切换壁纸展示
     window.addEventListener("mousedown", (event) => {
       if (event.button !== 1) return;

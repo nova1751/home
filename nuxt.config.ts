@@ -11,7 +11,7 @@ const siteName = env.VITE_SITE_NAME || "Home";
 const BG_COUNT = bgThumbs.length;
 
 // 在 HTML 解析阶段就选好默认壁纸：写入模糊缩略图（首帧显示），并开始下载原图，无需等待 JS 激活
-// 外部壁纸接口每次返回的图片可能不同，不做预加载
+// 首屏默认壁纸预加载一张；其他壁纸模式挂载后再读取本地图库。
 const bgPreloadScript = `(function(){try{var d=JSON.parse(localStorage.getItem("data")||"{}");if(d.coverType&&d.coverType!=="0")return}catch(e){}var T=${JSON.stringify(bgThumbs)},i=Math.floor(Math.random()*T.length),u="/images/background"+(i+1)+".webp";window.__BG__=u;document.documentElement.style.setProperty("--bg-thumb",'url("'+T[i]+'")');var l=document.createElement("link");l.rel="preload";l.as="image";l.href=u;l.fetchPriority="high";document.head.appendChild(l)})()`;
 
 export default defineNuxtConfig({

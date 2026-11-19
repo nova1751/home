@@ -20,7 +20,7 @@
       <a
         v-for="(item, index) in siteLinks"
         :key="item.name"
-        class="item cards"
+        class="item cards card-action"
         :href="item.link"
         :aria-label="item.name"
         target="_blank"
@@ -120,19 +120,12 @@ const openMusic = (event: MouseEvent, name: string) => {
       animation: rise 0.7s var(--ease-out) calc(0.28s + var(--i) * 0.05s) backwards;
 
       transition:
-        transform 0.35s var(--ease-out),
+        scale var(--card-scale-duration, 0.35s) var(--ease-out),
         background-color 0.3s;
-      &:hover {
-        transform: scale(1.02);
-        background: rgb(0 0 0 / 40%);
-      }
-
-      &:active {
-        transform: scale(1);
-      }
-      &:focus-visible {
-        outline: 2px solid currentColor;
-        outline-offset: 2px;
+      @media (hover: hover) {
+        &:hover:not(:active) {
+          background: rgb(0 0 0 / 40%);
+        }
       }
 
       .name {

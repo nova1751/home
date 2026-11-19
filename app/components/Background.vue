@@ -2,19 +2,17 @@
   <div :class="['cover', { show: store.backgroundShow, revealed: bgRevealed }]">
     <img
       v-if="bgUrl"
-      v-show="bgLoaded"
+      :key="bgUrl"
       :src="bgUrl"
       class="bg"
       alt="cover"
       fetchpriority="high"
-      @load="imgLoadComplete"
-      @error="imgLoadError"
       @animationend="imgAnimationEnd"
     />
     <div :class="store.backgroundShow ? 'gray hidden' : 'gray'" />
     <Transition name="fade" mode="out-in">
       <a
-        v-if="store.backgroundShow && store.coverType != '3'"
+        v-if="store.backgroundShow && bgUrl && store.coverType !== '3'"
         class="down"
         :href="bgUrl ?? undefined"
         target="_blank"
@@ -30,7 +28,6 @@ import { Error } from "@icon-park/vue-next";
 
 const store = useMainStore();
 const bgUrl = ref<string | null>(null);
-const bgLoaded = ref(false); // 壁纸图片已加载，开始淡入
 const bgRevealed = ref(false); // 淡入已完成
 const emit = defineEmits(["loadComplete"]);
 
@@ -42,23 +39,52 @@ const BG_TIMEOUT = 2000;
 let defaultBg = "";
 let loadTimer: ReturnType<typeof setTimeout> | undefined;
 let welcomed = false;
+let requestId = 0;
 
-// 更换壁纸链接
-const changeBg = (type: string) => {
-  const urls: Record<string, string> = {
-    "0": defaultBg,
-    "1": "https://api.dujin.org/bing/1920.php",
-    "2": "https://api.aixiaowai.cn/gqapi/gqapi.php",
-    "3": "https://api.aixiaowai.cn/api/api.php",
-  };
-  bgUrl.value = urls[type] ?? defaultBg;
+const wallpaperUrl = (index: number) => `/images/background${index}.webp`;
+const anime = [11, 12].filter((index) => index <= BG_COUNT);
+const scenery = Array.from({ length: BG_COUNT }, (_, index) => index + 1).filter(
+  (index) => !anime.includes(index),
+);
+
+const selectBg = (type: string) => {
+  if (type === "1") return wallpaperUrl((Math.floor(Date.now() / 86_400_000) % BG_COUNT) + 1);
+  const collection = type === "2" ? scenery : type === "3" ? anime : [];
+  const alternatives = collection.filter((index) => wallpaperUrl(index) !== bgUrl.value);
+  const choices = alternatives.length ? alternatives : collection;
+  return choices.length
+    ? wallpaperUrl(choices[Math.floor(Math.random() * choices.length)])
+    : defaultBg;
 };
 
-// 图片加载完成
-const imgLoadComplete = () => {
-  clearTimeout(loadTimer);
-  bgLoaded.value = true;
-  store.setImgLoadStatus(true);
+const decodeBg = async (url: string) => {
+  const image = new Image();
+  image.src = url;
+  await image.decode();
+};
+
+// Keep the current image visible until the next one is ready.
+const changeBg = async (type: string) => {
+  const id = ++requestId;
+  const url = selectBg(type);
+  try {
+    await decodeBg(url);
+    if (id !== requestId) return;
+    bgUrl.value = url;
+    store.setImgLoadStatus(true);
+  } catch {
+    if (id !== requestId) return;
+    if (!bgUrl.value && url !== defaultBg) {
+      await changeBg("0");
+      return;
+    }
+    store.setImgLoadStatus(true);
+    welcome();
+    ElMessage({
+      message: "壁纸加载失败",
+      icon: h(Error, { theme: "filled", fill: "#efefef" }),
+    });
+  }
 };
 
 // 触发加载完成事件（欢迎提示等），只触发一次
@@ -70,24 +96,9 @@ const welcome = () => {
 
 // 图片动画完成
 const imgAnimationEnd = () => {
+  clearTimeout(loadTimer);
   bgRevealed.value = true;
   welcome();
-};
-
-// 图片显示失败
-const imgLoadError = () => {
-  console.error("壁纸加载失败：", bgUrl.value);
-  if (bgUrl.value === defaultBg) {
-    clearTimeout(loadTimer);
-    store.setImgLoadStatus(true);
-    welcome();
-    return;
-  }
-  ElMessage({
-    message: "壁纸加载失败，已临时切换回默认",
-    icon: h(Error, { theme: "filled", fill: "#efefef" }),
-  });
-  bgUrl.value = defaultBg;
 };
 
 // 监听壁纸切换
@@ -98,17 +109,15 @@ onMounted(() => {
   defaultBg =
     (window as { __BG__?: string }).__BG__ ||
     `/images/background${Math.floor(Math.random() * BG_COUNT) + 1}.webp`;
-  changeBg(store.coverType);
+  void changeBg(store.coverType);
   loadTimer = setTimeout(() => {
-    if (!store.imgLoadStatus) {
-      console.warn("壁纸加载超时");
-      store.setImgLoadStatus(true);
-      welcome();
-    }
+    store.setImgLoadStatus(true);
+    welcome();
   }, BG_TIMEOUT);
 });
 
 onBeforeUnmount(() => {
+  requestId++;
   clearTimeout(loadTimer);
 });
 </script>
@@ -147,8 +156,13 @@ onBeforeUnmount(() => {
     // 竖屏上缩略图每像素约被拉到 50px，模糊要足够大，否则看得出方形色块
     filter: blur(40px);
   }
-  &.revealed::before {
-    display: none;
+  &.revealed {
+    &::before {
+      display: none;
+    }
+    .bg {
+      animation: none;
+    }
   }
   .gray {
     opacity: 1;
