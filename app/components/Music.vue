@@ -61,9 +61,9 @@
     </div>
   </Transition>
   <!-- 音乐列表弹窗 -->
-  <Transition name="playlist-shade">
+  <Transition name="fade">
     <div v-show="store.musicListShow" class="music-list" @click="store.musicListShow = false">
-      <Transition name="zoom">
+      <Transition name="playlist-zoom">
         <div v-show="store.musicListShow" class="list" @click.stop>
           <button
             class="close"
@@ -399,27 +399,16 @@ watch(volumeNum, (value) => {
   }
 }
 
-.playlist-shade-enter-active, .playlist-shade-leave-active {
-  transition: background-color var(--panel-enter) ease;
+.playlist-zoom-enter-active,
+.playlist-zoom-leave-active {
+  transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
 }
-.playlist-shade-leave-active { transition-duration: var(--panel-leave); }
-.playlist-shade-enter-from, .playlist-shade-leave-to { background-color: transparent; }
-
-// 弹窗动画
-.zoom-enter-active {
-  animation: zoom var(--panel-enter) var(--panel-curve);
+.playlist-zoom-leave-active {
+  transition-duration: 0.3s;
 }
-.zoom-leave-active {
-  animation: zoom var(--panel-leave) ease-in-out reverse;
-}
-@keyframes zoom {
-  0% {
-    opacity: 0;
-    transform: translateY(-32px) scale(0.86);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.playlist-zoom-enter-from,
+.playlist-zoom-leave-to {
+  opacity: 0;
+  transform: scale(0) translateY(-600px);
 }
 </style>
