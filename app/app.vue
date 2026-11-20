@@ -23,12 +23,18 @@
         <Transition name="panel">
           <MainLeft v-show="!showBox || !compact" class="intro" />
         </Transition>
-        <Transition name="panel">
-          <MainRight v-show="!showBox" class="sites" />
+        <Transition :name="rightPanelTransition" @after-leave="finishDesktopExit">
+          <MainRight
+            v-show="compact ? !showBox : desktopPanel === 'sites'"
+            class="sites"
+            :class="{ 'sites-revisited': BoxComponent }"
+            :inert="showBox"
+          />
         </Transition>
-        <Transition name="panel">
+        <Transition :name="rightPanelTransition" @after-leave="finishDesktopExit">
           <section
-            v-if="showBox"
+            v-if="compact ? showBox : desktopPanel === 'capsule'"
+            :inert="!showBox"
             ref="boxPanel"
             class="box-panel"
             aria-label="时光胶囊"
@@ -84,16 +90,23 @@ watch(
 const BoxComponent = shallowRef<typeof import("~/components/Box.vue").default>();
 const showBox = computed(() => store.boxOpenState && !!BoxComponent.value);
 const compact = computed(() => (store.innerWidth ?? 0) <= 720);
+// Keep the site widgets mounted (including audio) while the outgoing desktop view leaves.
+type DesktopPanel = "sites" | "capsule";
+const requestedPanel = computed<DesktopPanel>(() => showBox.value ? "capsule" : "sites");
+const desktopPanel = ref<DesktopPanel | null>("sites");
+const rightPanelTransition = computed(() => compact.value ? "panel" : "desktop-panel");
+watch([requestedPanel, compact], ([target, narrow], [, wasNarrow]) => {
+  if (narrow || wasNarrow) desktopPanel.value = target;
+  else if (desktopPanel.value !== target) desktopPanel.value = null;
+});
+const finishDesktopExit = () => {
+  if (desktopPanel.value === null) desktopPanel.value = requestedPanel.value;
+};
+
 const boxPanel = ref<HTMLElement | null>(null);
-const focusBox = () =>
-  boxPanel.value?.querySelector<HTMLButtonElement>(".setting")?.focus({ preventScroll: true });
-watch(
-  showBox,
-  (open) => {
-    if (open) focusBox();
-  },
-  { flush: "post" },
-);
+watch(boxPanel, (panel) => {
+  panel?.querySelector<HTMLButtonElement>(".setting")?.focus({ preventScroll: true });
+}, { flush: "post" });
 const closeBox = async () => {
   store.boxOpenState = false;
   await nextTick();
@@ -185,6 +198,31 @@ onBeforeUnmount(() => {
         max-height: 80dvh;
         overflow: auto;
         border-radius: 6px;
+      }
+      @media (width > 720px) {
+        // On return, the widgets move together instead of replaying their initial stagger.
+        .sites-revisited :deep(:is(.cards, .line)),
+        .box-panel :deep(:is(.box, .box > .content)) {
+          animation: none;
+        }
+        .desktop-panel-enter-active,
+        .desktop-panel-leave-active {
+          --handoff-duration: var(--panel-enter);
+          transition: translate var(--handoff-duration) var(--panel-curve);
+
+          :deep(:is(.cards, .line, .box, #music-controls)) {
+            transition: opacity var(--handoff-duration) var(--panel-curve);
+          }
+        }
+        .desktop-panel-leave-active {
+          --handoff-duration: 220ms;
+          pointer-events: none;
+        }
+        .desktop-panel-enter-from { translate: 0 14px; }
+        .desktop-panel-leave-to { translate: 0 -6px; }
+        :is(.desktop-panel-enter-from, .desktop-panel-leave-to) {
+          :deep(:is(.cards, .line, .box, #music-controls)) { opacity: 0; }
+        }
       }
       .panel-enter-active, .panel-leave-active {
         transition: translate var(--panel-enter) var(--panel-curve);
