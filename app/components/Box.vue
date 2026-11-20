@@ -10,7 +10,7 @@
       aria-haspopup="dialog"
       @click="store.setOpenState = true"
     >
-      <setting-two theme="filled" size="26" fill="#ffffffb0" aria-hidden="true" />
+      <setting-two theme="outline" size="26" fill="#ffffffb0" aria-hidden="true" />
     </button>
     <div class="content">
       <TimeCapsule />
@@ -59,6 +59,16 @@ const store = useMainStore();
 
   .setting {
     right: 54px;
+    appearance: none;
+    box-shadow: none;
+    &:focus-visible {
+      outline: none;
+      :deep(svg) {
+        stroke: white;
+        filter: drop-shadow(0 0 2px white);
+      }
+      @media (forced-colors: active) { outline: 2px solid Highlight; }
+    }
   }
 
   .content {

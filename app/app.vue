@@ -23,26 +23,29 @@
         <Transition name="panel">
           <MainLeft v-show="!showBox || !compact" class="intro" />
         </Transition>
-        <Transition :name="rightPanelTransition" @after-leave="finishDesktopExit">
-          <MainRight
-            v-show="compact ? !showBox : desktopPanel === 'sites'"
-            class="sites"
-            :class="{ 'sites-revisited': BoxComponent }"
-            :inert="showBox"
-          />
-        </Transition>
-        <Transition :name="rightPanelTransition" @after-leave="finishDesktopExit">
-          <section
-            v-if="compact ? showBox : desktopPanel === 'capsule'"
-            :inert="!showBox"
-            ref="boxPanel"
-            class="box-panel"
-            aria-label="时光胶囊"
-            @keydown.esc.stop="closeBox"
-          >
-            <BoxComponent @close="closeBox" />
-          </section>
-        </Transition>
+        <div class="panel-slot">
+          <Transition :name="rightPanelTransition" @after-leave="finishDesktopExit">
+            <MainRight
+              v-show="compact ? !showBox : desktopPanel === 'sites'"
+              class="sites"
+              :aria-hidden="!compact && desktopPanel !== 'sites' ? true : undefined"
+              :class="{ 'sites-revisited': BoxComponent }"
+              :inert="showBox"
+            />
+          </Transition>
+          <Transition :name="rightPanelTransition" @after-leave="finishDesktopExit">
+            <section
+              v-if="compact ? showBox : desktopPanel === 'capsule'"
+              ref="boxPanel"
+              :inert="!showBox"
+              class="box-panel"
+              aria-label="时光胶囊"
+              @keydown.esc.stop="closeBox"
+            >
+              <BoxComponent @close="closeBox" />
+            </section>
+          </Transition>
+        </div>
       </section>
     </div>
     <!-- 页脚 -->
@@ -180,6 +183,7 @@ onBeforeUnmount(() => {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       column-gap: 1.25rem;
       align-items: center;
+      .panel-slot { display: contents; }
       .intro,
       .sites,
       .box-panel {
@@ -200,6 +204,26 @@ onBeforeUnmount(() => {
         border-radius: 6px;
       }
       @media (width > 720px) {
+        .panel-slot {
+          grid-area: 1 / 2;
+          display: grid;
+          min-width: 0;
+        }
+        .sites, .box-panel { grid-area: 1 / 1; }
+        // Keep the site's natural height as the desktop slot's size after v-show finishes leaving.
+        .sites[aria-hidden="true"]:not(.desktop-panel-leave-active) {
+          display: block !important;
+          visibility: hidden;
+          translate: 0 14px;
+          // Leave the hidden surfaces at the starting opacity for the return transition.
+          :deep(:is(.cards, .line, #music-controls)) { opacity: 0; }
+        }
+        .box-panel {
+          display: grid;
+          align-self: stretch;
+          max-height: none;
+        }
+
         // On return, the widgets move together instead of replaying their initial stagger.
         .sites-revisited :deep(:is(.cards, .line)),
         .box-panel :deep(:is(.box, .box > .content)) {
