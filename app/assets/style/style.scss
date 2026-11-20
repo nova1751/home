@@ -64,6 +64,17 @@ p {
   border-radius: 6px;
   background-color: #00000040;
   backdrop-filter: blur(10px);
+  scale: 1;
+  transition: scale 0.35s var(--ease-out);
+  @media (hover: hover) {
+    &:hover:not(:active, [data-pressed]) {
+      scale: var(--card-hover-scale, 1.01);
+    }
+  }
+  &:is(:active, [data-pressed]) {
+    scale: 0.98;
+    transition-duration: 0.08s;
+  }
   &:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 3px;
@@ -71,18 +82,7 @@ p {
 }
 
 .cards.card-action {
-  transition: translate .32s var(--ease-out), background-color .18s ease;
-  @media (hover: hover) {
-    &:hover {
-      translate: 0 -2px;
-      background-color: #00000060;
-    }
-  }
-  &:is(:active, [data-pressed]) {
-    translate: 0 2px;
-    transition-duration: .08s;
-    background-color: #ffffff30;
-  }
+  --card-hover-scale: 1.02;
 }
 
 // 文字超出

@@ -34,7 +34,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       if (!event.isPrimary || event.pointerType !== "touch" || !(event.target instanceof Element))
         return;
       releaseCard();
-      pressedCard = event.target.closest(".card-action");
+      pressedCard = event.target.closest(".cards");
       pressedCard?.setAttribute("data-pressed", "");
     });
     const releaseTouchCard = (event: PointerEvent) => {
