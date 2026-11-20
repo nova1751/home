@@ -1,66 +1,64 @@
 <template>
   <!-- 音乐控制面板 -->
-  <Transition name="widget">
-    <div
-      v-show="store.musicOpenState"
-      id="music-controls"
-      class="music cards"
-      :inert="!store.musicOpenState"
-      @mouseenter="volumeHovered = true"
-      @mouseleave="volumeHovered = false"
-      @focusin="onMusicFocusIn"
-      @focusout="onMusicFocusOut"
-    >
-      <div class="btns">
-        <button type="button" @click="store.musicListShow = true">音乐列表</button>
-        <button type="button" @click="store.musicOpenState = false">回到一言</button>
+  <div
+    v-show="store.musicOpenState"
+    id="music-controls"
+    class="music cards"
+    :inert="!store.musicOpenState"
+    @mouseenter="volumeHovered = true"
+    @mouseleave="volumeHovered = false"
+    @focusin="onMusicFocusIn"
+    @focusout="onMusicFocusOut"
+  >
+    <div class="btns">
+      <button type="button" @click="store.musicListShow = true">音乐列表</button>
+      <button type="button" @click="store.musicOpenState = false">回到一言</button>
+    </div>
+    <div class="control">
+      <button type="button" aria-label="上一首" @click="changeMusicIndex(0)">
+        <go-start theme="filled" size="30" fill="#efefef" aria-hidden="true" />
+      </button>
+      <button type="button" class="state" :aria-label="store.playerState ? '暂停' : '播放'" @click="changePlayState">
+        <play-one v-show="!store.playerState" theme="filled" size="50" fill="#efefef" aria-hidden="true" />
+        <pause v-show="store.playerState" theme="filled" size="50" fill="#efefef" aria-hidden="true" />
+      </button>
+      <button type="button" aria-label="下一首" @click="changeMusicIndex(1)">
+        <go-end theme="filled" size="30" fill="#efefef" aria-hidden="true" />
+      </button>
+    </div>
+    <div class="menu" :class="{ 'retry-menu': store.musicLoadFailed && !store.musicRetrying }">
+      <div
+        v-show="!volumeShow || store.musicLoadFailed || store.musicRetrying"
+        class="name"
+        :class="{ 'retry-status': store.musicLoadFailed && !store.musicRetrying }"
+      >
+        <span role="status" aria-live="polite">{{ playerStatus }}</span>
+        <button
+          v-if="store.musicLoadFailed && !store.musicRetrying"
+          type="button"
+          class="retry"
+          aria-label="重新加载音乐"
+          @click="playerRef?.retryLoad()"
+        >重试</button>
       </div>
-      <div class="control">
-        <button type="button" aria-label="上一首" @click="changeMusicIndex(0)">
-          <go-start theme="filled" size="30" fill="#efefef" aria-hidden="true" />
-        </button>
-        <button type="button" class="state" :aria-label="store.playerState ? '暂停' : '播放'" @click="changePlayState">
-          <play-one v-show="!store.playerState" theme="filled" size="50" fill="#efefef" aria-hidden="true" />
-          <pause v-show="store.playerState" theme="filled" size="50" fill="#efefef" aria-hidden="true" />
-        </button>
-        <button type="button" aria-label="下一首" @click="changeMusicIndex(1)">
-          <go-end theme="filled" size="30" fill="#efefef" aria-hidden="true" />
-        </button>
-      </div>
-      <div class="menu" :class="{ 'retry-menu': store.musicLoadFailed && !store.musicRetrying }">
-        <div
-          v-show="!volumeShow || store.musicLoadFailed || store.musicRetrying"
-          class="name"
-          :class="{ 'retry-status': store.musicLoadFailed && !store.musicRetrying }"
-        >
-          <span role="status" aria-live="polite">{{ playerStatus }}</span>
-          <button
-            v-if="store.musicLoadFailed && !store.musicRetrying"
-            type="button"
-            class="retry"
-            aria-label="重新加载音乐"
-            @click="playerRef?.retryLoad()"
-          >重试</button>
+      <div v-show="volumeShow && !store.musicLoadFailed && !store.musicRetrying" class="volume">
+        <div class="icon">
+          <volume-mute v-if="volumeNum == 0" theme="filled" size="24" fill="#efefef" aria-hidden="true" />
+          <volume-small
+            v-else-if="volumeNum > 0 && volumeNum < 0.7"
+            theme="filled"
+            size="24"
+            fill="#efefef"
+            aria-hidden="true"
+          />
+          <volume-notice v-else theme="filled" size="24" fill="#efefef" aria-hidden="true" />
         </div>
-        <div v-show="volumeShow && !store.musicLoadFailed && !store.musicRetrying" class="volume">
-          <div class="icon">
-            <volume-mute v-if="volumeNum == 0" theme="filled" size="24" fill="#efefef" aria-hidden="true" />
-            <volume-small
-              v-else-if="volumeNum > 0 && volumeNum < 0.7"
-              theme="filled"
-              size="24"
-              fill="#efefef"
-              aria-hidden="true"
-            />
-            <volume-notice v-else theme="filled" size="24" fill="#efefef" aria-hidden="true" />
-          </div>
-          <ClientOnly>
-            <el-slider v-model="volumeNum" aria-label="音量" :show-tooltip="false" :min="0" :max="1" :step="0.01" />
-          </ClientOnly>
-        </div>
+        <ClientOnly>
+          <el-slider v-model="volumeNum" aria-label="音量" :show-tooltip="false" :min="0" :max="1" :step="0.01" />
+        </ClientOnly>
       </div>
     </div>
-  </Transition>
+  </div>
   <!-- 音乐列表弹窗 -->
   <Transition name="fade">
     <div v-show="store.musicListShow" class="music-list" @click="store.musicListShow = false">

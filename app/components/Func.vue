@@ -120,7 +120,10 @@ onBeforeUnmount(() => {
     .left {
       display: grid;
       grid-template: minmax(0, 1fr) / minmax(0, 1fr);
-      > :deep(.hitokoto), > :deep(.music) { grid-area: 1 / 1; }
+      > :deep(.hitokoto), > :deep(.music) {
+        grid-area: 1 / 1;
+        animation: fade 0.5s ease;
+      }
     }
     .right {
       padding: 20px;

@@ -225,7 +225,7 @@ onBeforeUnmount(() => {
         }
 
         // On return, the widgets move together instead of replaying their initial stagger.
-        .sites-revisited :deep(:is(.cards, .line)),
+        .sites-revisited :deep(:is(.right.cards, .links .item, .links .line)),
         .box-panel :deep(:is(.box, .box > .content)) {
           animation: none;
         }
