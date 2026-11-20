@@ -41,7 +41,7 @@
       </el-col>
       <el-col :span="12" class="right">
         <div class="title">
-          <setting-two theme="outline" size="28" fill="#ffffff60" />
+          <setting-two theme="filled" size="28" fill="#ffffff60" />
           <h2 id="settings-title" class="name">全局设置</h2>
         </div>
         <Settings />

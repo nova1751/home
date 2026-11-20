@@ -10,7 +10,7 @@
       aria-haspopup="dialog"
       @click="store.setOpenState = true"
     >
-      <setting-two theme="outline" size="26" fill="#ffffffb0" aria-hidden="true" />
+      <setting-two theme="filled" size="26" fill="#ffffffb0" aria-hidden="true" />
     </button>
     <div class="content">
       <TimeCapsule />
