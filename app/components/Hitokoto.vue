@@ -3,6 +3,7 @@
     <div
       v-show="!store.musicOpenState"
       class="hitokoto cards"
+      :inert="store.musicOpenState"
       :class="{ 'mobile-music': mobileMusic }"
       @mouseenter="openMusicShow = true"
       @mouseleave="openMusicShow = false"

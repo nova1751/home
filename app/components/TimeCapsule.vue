@@ -4,14 +4,18 @@
       <hourglass-full theme="two-tone" size="24" :fill="['#efefef', '#00000020']" />
       <span>时光胶囊</span>
     </div>
-    <span class="text">今日已经度过了&nbsp;{{ timeData.day.elapsed }}&nbsp;小时</span>
-    <el-progress :text-inside="true" :stroke-width="20" :percentage="timeData.day.pass" />
-    <span class="text">本周已经度过了&nbsp;{{ timeData.week.elapsed }}&nbsp;天</span>
-    <el-progress :text-inside="true" :stroke-width="20" :percentage="timeData.week.pass" />
-    <span class="text">本月已经度过了&nbsp;{{ timeData.month.elapsed }}&nbsp;天</span>
-    <el-progress :text-inside="true" :stroke-width="20" :percentage="timeData.month.pass" />
-    <span class="text">今年已经度过了&nbsp;{{ timeData.year.elapsed }}&nbsp;个月</span>
-    <el-progress :text-inside="true" :stroke-width="20" :percentage="timeData.year.pass" />
+    <div v-for="{ key, period, unit } in periods" :key="key" class="period">
+      <div class="summary">
+        <span :id="`capsule-${key}`">{{ period }}已经度过了 {{ timeData[key].elapsed }} {{ unit }}</span>
+        <span aria-hidden="true">{{ timeData[key].pass }}%</span>
+      </div>
+      <el-progress
+        :aria-labelledby="`capsule-${key}`"
+        :percentage="timeData[key].pass"
+        :show-text="false"
+        :stroke-width="8"
+      />
+    </div>
     <div v-if="startDate.length >= 4 && store.siteStartShow">
       <span class="text">{{ startDateText }}</span>
     </div>
@@ -25,6 +29,12 @@ import { getTimeCapsule, siteDateStatistics } from "~/utils/getTime";
 const store = useMainStore();
 
 // 进度条数据
+const periods = [
+  { key: "day", period: "今日", unit: "小时" },
+  { key: "week", period: "本周", unit: "天" },
+  { key: "month", period: "本月", unit: "天" },
+  { key: "year", period: "今年", unit: "个月" },
+] as const;
 const timeData = ref(getTimeCapsule());
 const startDate = useRuntimeConfig().public.siteStart;
 const startDateText = ref<string | null>(null);
@@ -49,7 +59,12 @@ onBeforeUnmount(() => {
 <style lang="scss" scoped>
 .time-capsule {
   width: 100%;
+  font-variant-numeric: tabular-nums;
+  :deep(.el-progress-bar__outer) {
+    background-color: #00000020;
+  }
   :deep(.el-progress-bar__inner) {
+    background-color: #efefef;
     animation: fill-progress .9s var(--panel-curve) .16s backwards;
   }
   .title {
@@ -65,8 +80,15 @@ onBeforeUnmount(() => {
       margin-right: 6px;
     }
   }
+  .summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin: 1.25rem 0 0.5rem;
+    font-size: 0.95rem;
+  }
   .text {
-    font-family: var(--numeric-text);
     display: block;
     margin: 1rem 0rem 0.5rem 0rem;
     font-size: 0.95rem;

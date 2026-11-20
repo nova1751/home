@@ -4,7 +4,8 @@
     <div
       v-show="store.musicOpenState"
       id="music-controls"
-      class="music"
+      class="music cards"
+      :inert="!store.musicOpenState"
       @mouseenter="volumeHovered = true"
       @mouseleave="volumeHovered = false"
       @focusin="onMusicFocusIn"
@@ -188,9 +189,6 @@ watch(volumeNum, (value) => {
 .music {
   width: 100%;
   height: 100%;
-  background: #00000040;
-  backdrop-filter: blur(10px);
-  border-radius: 6px;
   padding: 20px;
   display: flex;
   justify-content: space-between;
