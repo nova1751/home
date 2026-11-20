@@ -216,7 +216,7 @@ onBeforeUnmount(() => {
           visibility: hidden;
           translate: 0 14px;
           // Leave the hidden surfaces at the starting opacity for the return transition.
-          :deep(:is(.cards, .line, #music-controls)) { opacity: 0; }
+          :deep(:is(.cards, .line)) { opacity: 0; }
         }
         .box-panel {
           display: grid;
@@ -234,7 +234,7 @@ onBeforeUnmount(() => {
           --handoff-duration: var(--panel-enter);
           transition: translate var(--handoff-duration) var(--panel-curve);
 
-          :deep(:is(.cards, .line, .box, #music-controls)) {
+          :deep(:is(.cards, .line, .box)) {
             transition: opacity var(--handoff-duration) var(--panel-curve);
           }
         }
@@ -245,7 +245,7 @@ onBeforeUnmount(() => {
         .desktop-panel-enter-from { translate: 0 14px; }
         .desktop-panel-leave-to { translate: 0 -6px; }
         :is(.desktop-panel-enter-from, .desktop-panel-leave-to) {
-          :deep(:is(.cards, .line, .box, #music-controls)) { opacity: 0; }
+          :deep(:is(.cards, .line, .box)) { opacity: 0; }
         }
       }
       .panel-enter-active, .panel-leave-active {

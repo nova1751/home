@@ -1,7 +1,7 @@
 <template>
   <div
     v-show="!store.musicOpenState"
-    class="hitokoto cards"
+    class="hitokoto"
     :inert="store.musicOpenState"
     :class="{ 'mobile-music': mobileMusic }"
     @mouseenter="openMusicShow = true"
@@ -97,6 +97,7 @@ onBeforeUnmount(() => updateHitokoto.cancel());
 
 <style lang="scss" scoped>
 .hitokoto {
+  position: relative;
   width: 100%;
   height: 100%;
   padding: 20px;

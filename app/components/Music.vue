@@ -3,7 +3,7 @@
   <div
     v-show="store.musicOpenState"
     id="music-controls"
-    class="music cards"
+    class="music"
     :inert="!store.musicOpenState"
     @mouseenter="volumeHovered = true"
     @mouseleave="volumeHovered = false"
@@ -26,7 +26,7 @@
         <go-end theme="filled" size="30" fill="#efefef" aria-hidden="true" />
       </button>
     </div>
-    <div class="menu" :class="{ 'retry-menu': store.musicLoadFailed && !store.musicRetrying }">
+    <div class="menu">
       <div
         v-show="!volumeShow || store.musicLoadFailed || store.musicRetrying"
         class="name"
@@ -60,33 +60,35 @@
     </div>
   </div>
   <!-- 音乐列表弹窗 -->
-  <Transition name="fade">
-    <div v-show="store.musicListShow" class="music-list" @click="store.musicListShow = false">
-      <Transition name="playlist-zoom">
-        <div v-show="store.musicListShow" class="list" @click.stop>
-          <button
-            class="close"
-            type="button"
-            aria-label="关闭音乐列表"
-            @click="store.musicListShow = false"
-          >
-            <close-one theme="filled" size="28" fill="#ffffff60" aria-hidden="true" />
-          </button>
-          <ClientOnly>
-            <Player
-              ref="playerRef"
-              :song-api="playerData.api"
-              :song-fallback-api="config.songFallbackApi"
-              :song-server="playerData.server"
-              :song-type="playerData.type"
-              :song-id="playerData.id"
-              :volume="volumeNum"
-            />
-          </ClientOnly>
+  <ClientOnly>
+    <Teleport to="#teleports">
+      <Transition name="fade">
+        <div v-show="store.musicListShow" class="music-list" @click="store.musicListShow = false">
+          <Transition name="playlist-zoom">
+            <div v-show="store.musicListShow" class="list" @click.stop>
+              <button
+                class="close"
+                type="button"
+                aria-label="关闭音乐列表"
+                @click="store.musicListShow = false"
+              >
+                <close-one theme="filled" size="28" fill="#ffffff60" aria-hidden="true" />
+              </button>
+              <Player
+                ref="playerRef"
+                :song-api="playerData.api"
+                :song-fallback-api="config.songFallbackApi"
+                :song-server="playerData.server"
+                :song-type="playerData.type"
+                :song-id="playerData.id"
+                :volume="volumeNum"
+              />
+            </div>
+          </Transition>
         </div>
       </Transition>
-    </div>
-  </Transition>
+    </Teleport>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
@@ -268,17 +270,13 @@ watch(volumeNum, (value) => {
     }
   }
   .menu {
-    height: 26px;
+    height: 36px;
     width: 100%;
     line-height: 26px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    &.retry-menu {
-      height: 36px;
-      line-height: normal;
-    }
     .name {
       width: 100%;
       text-align: center;

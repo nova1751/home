@@ -3,7 +3,7 @@
   <div id="home-widgets" :class="store.mobileFuncState ? 'function mobile' : 'function'">
     <el-row :gutter="20">
       <el-col :span="12">
-        <div class="left">
+        <div class="left cards">
           <Hitokoto :player-configured="playerHasId" />
           <LazyMusic v-if="playerHasId" :hydrate-when="hydrateMusic" />
         </div>
