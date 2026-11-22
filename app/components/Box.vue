@@ -1,5 +1,5 @@
 <template>
-  <div class="box cards">
+  <div class="box">
     <button type="button" class="close" aria-label="关闭功能面板" @click="$emit('close')">
       <close-one theme="filled" size="26" fill="#ffffffb0" aria-hidden="true" />
     </button>
@@ -29,7 +29,9 @@ const store = useMainStore();
 .box {
   position: relative;
   animation: fade var(--panel-enter) var(--panel-curve) backwards;
-  --card-hover-scale: 1;
+  border-radius: 6px;
+  background-color: #00000040;
+  backdrop-filter: blur(10px);
 
   .close,
   .setting {
@@ -42,16 +44,18 @@ const store = useMainStore();
     place-items: center;
     background: transparent;
     border: 0;
-    transition:
-      transform 0.3s,
-      opacity 0.3s;
-
-    &:hover {
-      transform: scale(1.2);
+    .i-icon {
+      display: grid;
+      transition: transform 0.3s;
     }
 
-    &:active {
-      transform: scale(1);
+    @media (hover: hover) {
+      &:hover .i-icon { transform: scale(1.2); }
+    }
+
+    &:is(:active, [data-pressed]) .i-icon {
+      transform: scale(0.92);
+      transition-duration: 0.08s;
     }
   }
 
