@@ -1,6 +1,6 @@
 <template>
   <footer id="footer" :class="{ blur: mounted && store.footerBlur }">
-    <Transition name="fade" mode="out-in">
+    <Transition name="fade">
       <div v-if="!store.playerState || !store.playerLrcShow" class="power">
         <span>
           Copyright&nbsp;&copy;
@@ -25,13 +25,11 @@
         </a>
       </div>
       <div v-else class="lrc">
-        <Transition name="fade" mode="out-in">
-          <div :key="store.getPlayerLrc" class="lrc-all">
-            <music-one theme="filled" size="18" fill="#efefef" />
-            <span class="lrc-text text-hidden">{{ store.getPlayerLrc }}</span>
-            <music-one theme="filled" size="18" fill="#efefef" />
-          </div>
-        </Transition>
+        <div class="lrc-all">
+          <music-one theme="filled" size="18" fill="#efefef" />
+          <span :key="store.getPlayerLrc" class="lrc-text text-hidden">{{ store.getPlayerLrc }}</span>
+          <music-one theme="filled" size="18" fill="#efefef" />
+        </div>
       </div>
     </Transition>
   </footer>
@@ -83,6 +81,7 @@ onMounted(() => (mounted.value = true));
       align-items: center;
       .lrc-text {
         margin: 0 8px;
+        animation: lyric-in 0.15s ease-out;
       }
       .i-icon {
         width: 18px;
@@ -100,6 +99,11 @@ onMounted(() => (mounted.value = true));
   .fade-leave-active {
     transition: opacity 0.15s ease-in-out;
   }
+  .fade-leave-active {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
   @media (max-width: 720px) {
     font-size: 0.85rem;
     &.blur {
@@ -111,5 +115,9 @@ onMounted(() => (mounted.value = true));
       display: none;
     }
   }
+}
+@keyframes lyric-in {
+  from { opacity: 0.75; }
+  to { opacity: 1; }
 }
 </style>

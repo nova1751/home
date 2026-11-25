@@ -15,12 +15,12 @@
     :notice-switch="false"
     @play="onPlay"
     @pause="onPause"
-    @timeupdate="onTimeUp"
     @error="loadMusicError"
   />
 </template>
 
 <script setup lang="ts">
+import { bindLyricClock } from "~/utils/lyric-clock";
 import { MusicOne, PlayWrong } from "@icon-park/vue-next";
 import { getPlayerList, HttpRequestError, musicServiceUnavailable, type Song } from "~/utils/api";
 
@@ -34,9 +34,6 @@ const player = ref<any>(null);
 
 // 歌曲播放列表
 const playList = ref<Song[]>([]);
-
-// 歌曲播放项
-const playIndex = ref(0);
 
 // 配置项
 const props = defineProps({
@@ -135,11 +132,10 @@ onBeforeUnmount(() => {
 
 // 播放
 const onPlay = () => {
-  playIndex.value = player.value.aplayer.index;
   // 播放状态
   store.setPlayerState(player.value.audioRef.paused);
   // 储存播放器信息
-  const song = playList.value[playIndex.value];
+  const song = playList.value[player.value.aplayer.index];
   if (!song) return;
   store.setPlayerData(song.name, song.artist);
   ElMessage({
@@ -154,19 +150,27 @@ const onPause = () => {
   store.setPlayerState(player.value.audioRef.paused);
 };
 
-// 音频时间更新事件
-const onTimeUp = () => {
-  const lyrics = player.value.aplayer.lyrics[playIndex.value];
-  const lyricIndex = player.value.aplayer.lyricIndex;
-  if (!lyrics || !lyrics[lyricIndex]) return;
-  let lrc = lyrics[lyricIndex][1];
-  if (lrc === "Loading") {
-    lrc = "歌词加载中";
-  } else if (lrc === "Not available") {
-    lrc = "歌词加载失败";
-  }
-  if (lrc !== store.playerLrc) store.setPlayerLrc(lrc);
-};
+// 底栏直接订阅播放器的当前行，异步歌词加载和切歌也走同一条更新路径。
+watch(
+  () => {
+    const state = player.value?.aplayer;
+    return state?.lyrics[state.index]?.[state.lyricIndex]?.[1] ?? "";
+  },
+  (line) => {
+    const text = line === "Loading" ? "歌词加载中" : line === "Not available" ? "歌词加载失败" : line;
+    store.setPlayerLrc(text);
+  },
+  { immediate: true },
+);
+
+watch(player, (instance, _, onCleanup) => {
+  if (!instance) return;
+  onCleanup(bindLyricClock(
+    instance.audioRef,
+    () => instance.aplayer.lyrics[instance.aplayer.index] ?? [],
+    () => instance.timeupdate(),
+  ));
+}, { flush: "post" });
 
 // 切换播放暂停事件
 const playToggle = () => {
@@ -280,7 +284,11 @@ defineExpose({ playToggle, changeVolume, changeSong, showList, retryLoad });
         &::after {
           display: none;
         }
+        .aplayer-lrc-contents {
+          transition: transform 0.15s ease-out;
+        }
         p {
+          transition: opacity 0.15s ease-out;
           color: #efefef;
         }
         .aplayer-lrc-current {
