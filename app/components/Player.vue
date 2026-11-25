@@ -188,9 +188,9 @@ const changeSong = (type: number) => {
   });
 };
 
-// 切换歌曲列表状态
-const toggleList = () => {
-  player.value?.toggleList();
+// 展开列表并定位到当前曲目
+const showList = () => {
+  player.value?.showList();
 };
 
 // 加载音频错误
@@ -231,7 +231,7 @@ const loadMusicError = async () => {
 };
 
 // 暴露子组件方法
-defineExpose({ playToggle, changeVolume, changeSong, toggleList, retryLoad });
+defineExpose({ playToggle, changeVolume, changeSong, showList, retryLoad });
 </script>
 
 <style lang="scss" scoped>

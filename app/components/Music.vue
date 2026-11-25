@@ -81,6 +81,7 @@
                 :song-server="playerData.server"
                 :song-type="playerData.type"
                 :song-id="playerData.id"
+                list-folded
                 :volume="volumeNum"
               />
             </div>
@@ -129,7 +130,7 @@ const playerRef = ref<{
   playToggle: () => void;
   changeVolume: (value: number) => void;
   changeSong: (type: number) => void;
-  toggleList: () => void;
+  showList: () => void;
   retryLoad: () => void;
 } | null>(null);
 const playerData = {
@@ -146,10 +147,13 @@ const playerStatus = computed(() => {
   return name ? name + " - " + artist : "未播放音乐";
 });
 
-// 开关播放列表
+// 打开时定位到当前曲目，收起时由弹窗统一处理退场。
 watch(
   () => store.musicListShow,
-  () => playerRef.value?.toggleList(),
+  (open) => {
+    if (open) playerRef.value?.showList();
+  },
+  { flush: "post" },
 );
 
 // 音乐播放暂停
