@@ -267,33 +267,27 @@ defineExpose({ playToggle, changeVolume, changeSong, showList, retryLoad });
       .aplayer-lrc {
         text-align: left;
         margin: 7px 0 6px 6px;
-        height: 44px;
-        mask: linear-gradient(
-          #fff 15%,
-          #fff 85%,
-          hsla(0deg, 0%, 100%, 0.6) 90%,
-          hsla(0deg, 0%, 100%, 0)
-        );
-        -webkit-mask: linear-gradient(
-          #fff 15%,
-          #fff 85%,
-          hsla(0deg, 0%, 100%, 0.6) 90%,
-          hsla(0deg, 0%, 100%, 0)
-        );
+        // APlayer scrolls 16px per cue. Reserve one full row on either side.
+        --lyric-row: 16px;
+        height: calc(3 * var(--lyric-row));
         &::before,
         &::after {
           display: none;
         }
         .aplayer-lrc-contents {
+          padding-top: var(--lyric-row);
           transition: transform 0.15s ease-out;
         }
         p {
           transition: opacity 0.15s ease-out;
           color: #efefef;
+          white-space: nowrap;
+          text-overflow: ellipsis;
         }
         .aplayer-lrc-current {
           font-size: 0.95rem;
-          margin-bottom: 4px !important;
+          height: var(--lyric-row) !important;
+          overflow: hidden;
         }
       }
       .aplayer-controller {
