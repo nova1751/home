@@ -267,9 +267,8 @@ defineExpose({ playToggle, changeVolume, changeSong, showList, retryLoad });
       .aplayer-lrc {
         text-align: left;
         margin: 7px 0 6px 6px;
-        // APlayer scrolls 16px per cue. Show the active cue and the next one.
-        --lyric-row: 16px;
-        height: calc(2 * var(--lyric-row));
+        // APlayer scrolls in 16px steps. A wrapped cue can use both rows.
+        height: 32px;
         &::before,
         &::after {
           display: none;
@@ -280,13 +279,10 @@ defineExpose({ playToggle, changeVolume, changeSong, showList, retryLoad });
         p {
           transition: opacity 0.15s ease-out;
           color: #efefef;
-          white-space: nowrap;
-          text-overflow: ellipsis;
+          overflow-wrap: anywhere;
         }
         .aplayer-lrc-current {
           font-size: 0.95rem;
-          height: var(--lyric-row) !important;
-          overflow: hidden;
         }
       }
       .aplayer-controller {
